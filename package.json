@@ -1,0 +1,58 @@
+{
+  "name": "react-storybook-author",
+  "version": "0.1.0",
+  "description": "A storybook authoring tool.",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "docs": "gulp typedoc",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "lint": "tslint -c tslint.json -p tsconfig.json",
+    "start": "tsc -v && yarn build && electron ./dist/main/main.js",
+    "debug": "tsc -v && yarn build && electron ./dist/main/main.js --debug",
+    "restart": "electron ./dist/main/main.js",
+    "client": "tsc -v && yarn build && electron ./dist/main/main.js --client",
+    "redis": "tsc -v && yarn build && electron ./dist/main/main.js --pubsub redis"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wwlib/react-storybook-author.git"
+  },
+  "author": "Andrew Rapo <andrew@wwlib.org> (http://wwlib.github.io)",
+  "contributors": [
+    "Hanna Lee"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wwlib/react-storybook-author/issues"
+  },
+  "homepage": "https://github.com/wwlib/react-storybook-author#readme",
+  "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.5",
+    "@types/pubsub-js": "^1.5.18",
+    "@types/react": "^16.4.7",
+    "@types/react-bootstrap": "^0.32.11",
+    "@types/react-dom": "^16.0.6",
+    "chai": "^4.1.2",
+    "gulp": "^3.9.1",
+    "gulp-typedoc": "^2.2.0",
+    "mocha": "^5.2.0",
+    "ts-node": "^7.0.0",
+    "tslint": "^5.11.0",
+    "typedoc": "^0.11.1",
+    "typescript": "^2.9.2"
+  },
+  "dependencies": {
+    "electron": "^2.0.5",
+    "os": "^0.1.1",
+    "performance-now": "^2.1.0",
+    "prettyjson": "^1.2.1",
+    "react": "^16.4.1",
+    "react-bootstrap": "^0.32.1",
+    "react-dom": "^16.4.1",
+    "react-easy-chart": "^1.0.0",
+    "yargs": "^12.0.1"
+  }
+}
