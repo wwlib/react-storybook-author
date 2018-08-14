@@ -11,9 +11,7 @@
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "tsc -v && yarn build && electron ./dist/main/main.js",
     "debug": "tsc -v && yarn build && electron ./dist/main/main.js --debug",
-    "restart": "electron ./dist/main/main.js",
-    "client": "tsc -v && yarn build && electron ./dist/main/main.js --client",
-    "redis": "tsc -v && yarn build && electron ./dist/main/main.js --pubsub redis"
+    "restart": "electron ./dist/main/main.js"
   },
   "repository": {
     "type": "git",

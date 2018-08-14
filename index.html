@@ -3,11 +3,104 @@
   <head>
     <meta charset="UTF-8">
     <title>react-storybook-author</title>
+<!--
     <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css">
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+-->
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/temp.css">
+
   </head>
   <body>
       <div id="app"></div>
+
+      <app-root _nghost-c0="" ng-version="6.1.2">
+  <div _ngcontent-c0="" class="topNav">
+    <div _ngcontent-c0="" class="topButtons">
+      <div _ngcontent-c0="" class="topLeftButtons"><button _ngcontent-c0="" id="addPageButton"></button>
+        <!--bindings={
+"ng-reflect-ng-if": "true"
+}--><button _ngcontent-c0="" id="deletePageButton"></button>
+        <!--bindings={
+"ng-reflect-ng-if": "true"
+}--><button _ngcontent-c0="" class="toggleSceneObjectsButton" id="hideSceneObjectsButton"></button>
+        <!--bindings={
+"ng-reflect-ng-if": "false"
+}-->
+        <!--bindings={}-->
+      </div>
+      <div _ngcontent-c0="" class="topRightButtons"><button _ngcontent-c0="" id="submitButton"></button></div>
+    </div>
+  </div>
+  <div _ngcontent-c0="" class="sideNav">
+    <!--bindings={
+"ng-reflect-ng-for-of": "[object Object],[object Object"
+}-->
+    <div _ngcontent-c0="" class="preview">
+      <div _ngcontent-c0="" class="preview-white-background" ng-reflect-ng-style="[object Object]" style="border: none;">
+        <div _ngcontent-c0="" class="preview-image-container"><img _ngcontent-c0="" class="preview-thumbnail" src="assets/previewBlock.png"></div>
+        <div _ngcontent-c0="" class="preview-text-container">
+          <p _ngcontent-c0=""></p>
+        </div>
+      </div>
+    </div>
+    <div _ngcontent-c0="" class="preview">
+      <div _ngcontent-c0="" class="preview-white-background" ng-reflect-ng-style="[object Object]" style="border: 1pt solid blue;">
+        <div _ngcontent-c0="" class="preview-image-container"><img _ngcontent-c0="" class="preview-thumbnail" src="assets/previewBlock.png"></div>
+        <div _ngcontent-c0="" class="preview-text-container">
+          <p _ngcontent-c0=""></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div _ngcontent-c0="" id="mainPage" ng-reflect-ng-style="[object Object]" style="width: 1097px; height: 500px;">
+    <!--bindings={
+"ng-reflect-ng-if": "false"
+}-->
+    <!--bindings={
+"ng-reflect-ng-if": "true"
+}-->
+    <div _ngcontent-c0="" id="mainPageTopStory">
+      <div _ngcontent-c0="" id="imageContainer">
+        <!--bindings={
+"ng-reflect-ng-if": "true"
+}--><button _ngcontent-c0="" class="imageUploadButton"></button><input _ngcontent-c0="" accept="image/*" id="uploadImageFileInput" ng-file-select="onFileSelect($files)" onchange="angular.element(this).scope().uploadImage(this.files)" type="file">
+        <!--bindings={}-->
+      </div>
+      <div _ngcontent-c0="" id="textContainer"><textarea _ngcontent-c0="" id="storyTextAreaInput" rows="5" ng-reflect-model="" placeholder="Type to enter page content..." class="ng-untouched ng-pristine ng-valid"> </textarea>
+        <div _ngcontent-c0="" id="promptContainer">
+          <!--bindings={
+"ng-reflect-ng-for-of": ""
+}-->
+          <div _ngcontent-c0="" class="addPromptContainer"><button _ngcontent-c0="" id="addPromptButton"></button></div>
+        </div>
+      </div>
+    </div>
+    <div _ngcontent-c0="" id="mainPageBottom">
+      <div _ngcontent-c0="" id="pageNumber"> Page 1 </div>
+    </div>
+    <div _ngcontent-c0="" class="bottomNav">
+      <div _ngcontent-c0="" class="bottomButtons">
+        <div _ngcontent-c0="" class="bottomLeftButtons"><button _ngcontent-c0="" class="arrow" id="backButton" ng-reflect-ng-style="[object Object]" style="visibility: visible;"></button></div>
+        <div _ngcontent-c0="" class="bottomCenterButtons">
+          <!--bindings={
+"ng-reflect-ng-if": "true"
+}--><button _ngcontent-c0="" id="recordButton"></button>
+          <!--bindings={
+"ng-reflect-ng-if": "false"
+}-->
+          <p _ngcontent-c0="" style="vertical-align: middle; margin: 2px;">or</p><button _ngcontent-c0="" id="uploadAudioButton"></button><input _ngcontent-c0="" accept="audio/wav" id="uploadAudioFileInput" ng-file-select="onFileSelect($files)" onchange="angular.element(this).scope().saveAudioFile(this.files)" type="file">
+          <!--bindings={
+"ng-reflect-ng-if": "false"
+}-->
+        </div>
+        <div _ngcontent-c0="" class="bottomRightButtons"><button _ngcontent-c0="" class="arrow" id="nextButton"></button></div>
+      </div>
+    </div>
+  </div>
+</app-root>
+
   </body>
 
   <script>
