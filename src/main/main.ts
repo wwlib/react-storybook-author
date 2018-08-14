@@ -1,6 +1,11 @@
 import { app, BrowserWindow } from "electron";
 import * as path from "path";
 
+// enables hot reloading during development
+require('electron-reload')(path.join(__dirname, "../../dist"), {
+  electron: require('${__dirname}/../../node_modules/electron')
+});
+
 let mainWindow: Electron.BrowserWindow;
 
 function createWindow() {
