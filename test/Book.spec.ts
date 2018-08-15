@@ -1,25 +1,25 @@
 import { expect } from 'chai';
 import 'mocha';
 
-import Page from '../src/renderer/model/Page';
-import Book from  '../src/renderer/model/Book';
+import Page, { PageOptions } from '../src/renderer/model/Page';
+import Book, { BookOptions } from  '../src/renderer/model/Book';
 
-let pagesData: any[] = [
+let pagesData: PageOptions[] = [
     {
-        title: 'title',
+        title: 'one',
         pageNumber: 1,
         image: undefined,
-        text: 'text',
+        text: '<text>',
         audio: undefined,
         prompts: [
-            'prompt1',
-            'prompt2'
+            '<prompt1>',
+            '<prompt2>'
         ],
         css: '',
         sceneObjects: []
     },
     {
-        title: '<title>',
+        title: 'zero',
         pageNumber: 0,
         image: undefined,
         text: '<text>',
@@ -39,7 +39,7 @@ let pagesData: any[] = [
 //     pages.push(page);
 // });
 
-let bookData: any = {
+let bookData: BookOptions = {
     filename: 'untitled',
     title: '<title>',
     currentPageNumber: 0,
@@ -59,9 +59,9 @@ describe('Book', () => {
         expect(book.filename).to.equal('untitled');
     });
 
-    it('title should be "<title>"', () => {
+    it('title should not be undefined', () => {
         let book: Book = new Book(bookData);
-        expect(book.title).to.equal('<title>');
+        expect(book.title).to.not.be.undefined;
     });
 
     it('currentPageNumber should be 0', () => {
@@ -80,7 +80,7 @@ describe('Book', () => {
         expect(book.pageCount).to.equal(pageArray.length);
     });
 
-    it('pages (Array) should sorted by page.pageNumber (ascending)', () => {
+    it('pages (Array) should be sorted by page.pageNumber (ascending)', () => {
         let book: Book = new Book(bookData);
         let pageArray: Page[] = book.pageArray;
         let sorted: boolean = true;
@@ -96,8 +96,52 @@ describe('Book', () => {
 
     it('after adding a new page, book.pageCount should be 3', () => {
         let book: Book = new Book(bookData);
-        book.addNewPage({pageNumber: 2})
+        book.addNewPage()
         let pageArray: Page[] = book.pageArray;
+        // pageArray.map((page: Page) => { console.log(`${page.pageNumber}: ${page.title}`)});
+        expect(book.pageCount).to.equal(pageArray.length);
+    });
+
+    it('after adding a new page, page.pageNumber should be 2', () => {
+        let book: Book = new Book(bookData);
+        let page: Page = book.addNewPage();
+        expect(page.pageNumber).to.equal(2);
+    });
+
+    it('after inserting a new page, pageArray should be sorted with no gaps', () => {
+        let book: Book = new Book(bookData);
+        let page: Page = book.addNewPage({ pageNumber: 1});
+        let pageArray: Page[] = book.pageArray;
+        // pageArray.map((page: Page) => { console.log(`${page.pageNumber}: ${page.title}`)});
+        let sorted: boolean = true;
+        let prevPageNumber: number = 0;
+        pageArray.forEach((page: Page) => {
+            if (page.pageNumber < prevPageNumber || (page.pageNumber - prevPageNumber > 1)) {
+                sorted = false;
+            }
+            prevPageNumber = page.pageNumber;
+        })
+        expect(sorted).to.be.true;
+        expect(book.pageCount).to.equal(3);
+        expect(book.pageCount).to.equal(pageArray.length);
+    });
+
+    it('after deleting a page, pageArray should be sorted with no gaps', () => {
+        let book: Book = new Book(bookData);
+        let page: Page = book.addNewPage({ pageNumber: 1});
+        book.deletePage(page);
+        let pageArray: Page[] = book.pageArray;
+        // pageArray.map((page: Page) => { console.log(`${page.pageNumber}: ${page.title}`)});
+        let sorted: boolean = true;
+        let prevPageNumber: number = 0;
+        pageArray.forEach((page: Page) => {
+            if (page.pageNumber < prevPageNumber || (page.pageNumber - prevPageNumber > 1)) {
+                sorted = false;
+            }
+            prevPageNumber = page.pageNumber;
+        })
+        expect(sorted).to.be.true;
+        expect(book.pageCount).to.equal(2);
         expect(book.pageCount).to.equal(pageArray.length);
     });
 

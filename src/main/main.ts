@@ -6,7 +6,7 @@ require('electron-reload')(path.join(__dirname, "../../dist"), {
   electron: require('${__dirname}/../../node_modules/electron')
 });
 
-let mainWindow: Electron.BrowserWindow;
+let mainWindow: Electron.BrowserWindow | undefined;
 
 function createWindow() {
   // Create the browser window.
@@ -26,7 +26,7 @@ function createWindow() {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    mainWindow = null;
+    mainWindow = undefined;
   });
 }
 

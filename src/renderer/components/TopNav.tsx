@@ -1,7 +1,8 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
+import Model from '../model/Model';
 
-export interface TopNavProps { }
+export interface TopNavProps { model: Model }
 export interface TopNavState { }
 
 export default class TopNav extends React.Component<TopNavProps, TopNavState> {
@@ -17,21 +18,26 @@ export default class TopNav extends React.Component<TopNavProps, TopNavState> {
     onButtonClicked(action: string): void {
         // console.log(`onButtonClicked: ${action}`);
         switch (action) {
-            case 'action':
+            case 'addPage':
+                this.props.model.addNewPage();
+                break;
+            case 'deletePage':
+                break;
+            case 'hideSceneObjects':
                 break;
         }
     }
 
     render() {
         return (
-            <div _ngcontent-c0="" className="topNav">
-                <div _ngcontent-c0="" className="topButtons">
-                    <div _ngcontent-c0="" className="topLeftButtons"><button _ngcontent-c0="" id="addPageButton"></button>
-                        <button _ngcontent-c0="" id="deletePageButton"></button>
-                        <button _ngcontent-c0="" className="toggleSceneObjectsButton" id="hideSceneObjectsButton"></button>
+            <div className="topNav">
+                <div className="topButtons">
+                    <div className="topLeftButtons"><button id="addPageButton" onClick={this.onButtonClicked.bind(this, "addPage")} />
+                        <button id="deletePageButton" onClick={this.onButtonClicked.bind(this, "deletePage")} />
+                        <button className="toggleSceneObjectsButton" id="hideSceneObjectsButton" onClick={this.onButtonClicked.bind(this, "hideSceneObjects")} />
                     </div>
-                    <div _ngcontent-c0="" className="topRightButtons">
-                        <button _ngcontent-c0="" id="submitButton"></button>
+                    <div className="topRightButtons">
+                        <button id="submitButton"></button>
                     </div>
                 </div>
             </div>

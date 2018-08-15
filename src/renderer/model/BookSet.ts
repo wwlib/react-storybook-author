@@ -20,7 +20,7 @@ export default class BookSet {
         return book;
     }
 
-    getBookConnectionWithName(name: string): string {
+    getBookConnectionWithName(name: string): string | undefined {
         return this.bookNames.get(name);
     }
 
@@ -43,7 +43,7 @@ export default class BookSet {
                             files.forEach((file: string) => {
                                 let filename: string = path.basename(file, '.json');
                                     // console.log(`loadBookNames: adding: ${file} -> ${filename}`);
-                                    this.bookNames.set(filename, undefined);
+                                    this.bookNames.set(filename, '');
                                     // let filepath: string = path.resolve(this.model.userDataPath, file);
                                     // this.load(filepath, (err: any, obj: any) => {
                                     //     if (err) {

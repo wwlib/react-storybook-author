@@ -1,11 +1,12 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
+import Model from '../model/Model';
 import TopNav from './TopNav';
 import SideNav from './SideNav';
 import MainPage from './MainPage';
 import TitlePage from './TitlePage';
 
-export interface ApplicationProps {  }
+export interface ApplicationProps { model: Model }
 export interface ApplicationState {  }
 
 export default class Application extends React.Component < ApplicationProps, ApplicationState > {
@@ -29,8 +30,8 @@ export default class Application extends React.Component < ApplicationProps, App
     render() {
         return(
             <div>
-                <TopNav />
-                <SideNav />
+                <TopNav model={this.props.model}/>
+                <SideNav model={this.props.model}/>
                 <TitlePage />
                 Hello
             </div>

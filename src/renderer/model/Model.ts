@@ -3,6 +3,8 @@ import AppSettings from "./AppSettings";
 import AppInfo from './AppInfo';
 import WindowComponent from './WindowComponent';
 import { appVersion } from './AppVersion';
+import Book, { BookOptions } from './Book';
+import Page, { PageOptions } from './Page';
 
 const uuidv4 = require('uuid/v4');
 const now = require("performance-now");
@@ -15,6 +17,8 @@ export default class Model extends EventEmitter {
     public appInfo: AppInfo;
     public statusMessages: string;
     public panelZIndexMap: Map<string, number>;
+    public activeBook: Book;
+    public activePage: Page;
 
     constructor() {
         super();
@@ -29,6 +33,7 @@ export default class Model extends EventEmitter {
             } else {
                 this.initWithData(this.appSettings.data);
             }
+            this.activeBook = new Book();
             this.emit('ready', this);
         });
 
@@ -86,12 +91,12 @@ export default class Model extends EventEmitter {
             this.statusMessages = '';
         }
         this.statusMessages = `${subsystem}: ${this.statusMessages}\n${message}`;
-        this.emit('updateModel', this);
+        this.onUpdate();
         return this.statusMessages;
     }
 
-    onUpdateRobots(event: any): void {
-        this.emit('updateModel', this);
+    onUpdate(): void {
+        this.emit('updateModel');
     }
 
     // Window Management
@@ -129,6 +134,31 @@ export default class Model extends EventEmitter {
 
     addPanelWithId(panelId: string, x: number = 0, y: number = 0, z: number = 0): void {
         WindowComponent.addWindowWithId(panelId, x, y, z);
+    }
+
+    // Book & Page API
+
+    newBook(options?: BookOptions): Book {
+        this.activeBook = new Book(options);
+        return this.activeBook;
+    }
+
+    addNewPage(options?: PageOptions): Page | undefined {
+        let result: Page | undefined = undefined;
+        if (this.activeBook) {
+            result = this.activePage = this.activeBook.addNewPage();
+            this.onUpdate();
+            console.log(`addPage: `, this.activeBook.toJSON());
+        }
+        return result;
+    }
+
+    deletePage(page: Page): Page | undefined {
+        let result: Page | undefined = undefined;
+        if (this.activeBook) {
+            result = this.activePage = this.activeBook.deletePage(page);
+        }
+        return result;
     }
 
     static getUUID(): string {

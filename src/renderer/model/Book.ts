@@ -1,16 +1,16 @@
 import Model from './Model';
-import Page, { PageData } from './Page';
+import Page, { PageOptions } from './Page';
 
 export type BookConfig = any;
 
-export type BookData = {
+export type BookOptions = {
     uuid?: string;
     filename?: string;
     title?: string;
     currentPageNumber?: number
     css?: string;
-    config?: BookConfig;
-    pages?: Page[];
+    config?: BookConfig | undefined;
+    pages?: PageOptions[];
 }
 
 export default class Book {
@@ -25,7 +25,7 @@ export default class Book {
 
     constructor(json?: any) {
         json = json || {};
-        let defaultJSON: BookData =  {
+        let defaultJSON: BookOptions =  {
             uuid: Model.getUUID(),
             filename: 'untitled',
             title: '',
@@ -71,10 +71,42 @@ export default class Book {
         return json;
     }
 
-    addNewPage(options?: PageData): Page {
+    addNewPage(options?: PageOptions): Page {
         let page: Page = new Page(options);
         this.pages.set(page.uuid, page);
+        if (page.pageNumber == undefined) {
+            page.pageNumber = this.pages.size - 1; // add to the end
+        } else {
+            this.insertPage(page, page.pageNumber);
+        }
         return page;
+    }
+
+    private insertPage(page: Page, pageNumber: number): void {
+        pageNumber = Math.min(this.pages.size, pageNumber);
+        pageNumber = Math.max(0, pageNumber)
+        page.pageNumber = pageNumber;
+        let pageArray: Page[] = this.pageArray;
+        pageArray.forEach((testPage: Page) => {
+            //TODO
+            if (testPage != page && testPage.pageNumber >= page.pageNumber) {
+                testPage.pageNumber++;
+            }
+        });
+    }
+
+    deletePage(page: Page): Page {
+        let pageNumber: number = page.pageNumber;
+        this.pages.delete(page.uuid);
+        let pageArray: Page[] = this.pageArray;
+        pageArray.forEach((testPage: Page) => {
+            //TODO
+            if (testPage.pageNumber >= page.pageNumber) {
+                testPage.pageNumber--;
+            }
+        });
+        pageNumber = Math.min(pageArray.length, pageNumber);
+        return pageArray[pageNumber];
     }
 
     get pageCount(): number {

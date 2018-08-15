@@ -1,6 +1,6 @@
 import Model from './Model';
 
-export type PageData = {
+export type PageOptions = {
     uuid?: string;
     title?: string;
     pageNumber?: number;
@@ -26,10 +26,10 @@ export default class Page {
 
     constructor(json?: any) {
         json = json || {};
-        let defaultJSON: PageData =  {
+        let defaultJSON: PageOptions =  {
             uuid: Model.getUUID(),
             title: '',
-            pageNumber: 0,
+            pageNumber: undefined,
             image: undefined,
             text: '',
             audio: undefined,

@@ -1,17 +1,31 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
+import Model from '../model/Model';
+import Page from '../model/Page';
+import PageThumbnail from './PageThumbnail';
 
-export interface SideNavProps { }
-export interface SideNavState { }
+
+export interface SideNavProps { model: Model }
+export interface SideNavState { pageArray: Page[] }
 
 export default class SideNav extends React.Component<SideNavProps, SideNavState> {
 
+    private _onModelUpdateHandler: any = this.onModelUpdateHandler.bind(this);
 
     componentWillMount() {
         this.setState({});
+        this.props.model.on('updateModel', this._onModelUpdateHandler);
+    }
+
+    onModelUpdateHandler(): void {
+        this.setState({ pageArray: this.props.model.activeBook.pageArray});
     }
 
     componentDidMount() {
+    }
+
+    componentWillUnmount() {
+        this.props.model.removeListener('updateModel', this._onModelUpdateHandler);
     }
 
     onButtonClicked(action: string): void {
@@ -22,29 +36,20 @@ export default class SideNav extends React.Component<SideNavProps, SideNavState>
         }
     }
 
+    thumbnails(): JSX.Element[] {
+        let result: JSX.Element[] = [];
+        if (this.state.pageArray) {
+            this.state.pageArray.forEach((page: Page) => {
+                result.push(<PageThumbnail key={page.uuid}/>);
+            })
+        }
+        return result;
+    }
+
     render() {
         return (
             <div _ngcontent-c0="" className="sideNav">
-
-                <div _ngcontent-c0="" className="preview">
-                    <div _ngcontent-c0="" className="preview-white-background" ng-reflect-ng-style="[object Object]" style={{ border: 'none' }}>
-                        <div _ngcontent-c0="" className="preview-image-container">
-                            <img _ngcontent-c0="" className="preview-thumbnail" src="assets/previewBlock.png" />
-                        </div>
-                        <div _ngcontent-c0="" className="preview-text-container">
-                            <p _ngcontent-c0=""></p>
-                        </div>
-                    </div>
-                </div>
-                <div _ngcontent-c0="" className="preview">
-                    <div _ngcontent-c0="" className="preview-white-background" ng-reflect-ng-style="[object Object]" style={{ border: "1pt solid blue" }}>
-                        <div _ngcontent-c0="" className="preview-image-container">
-                            <img _ngcontent-c0="" className="preview-thumbnail" src="assets/previewBlock.png" /></div>
-                        <div _ngcontent-c0="" className="preview-text-container">
-                            <p _ngcontent-c0=""></p>
-                        </div>
-                    </div>
-                </div>
+                {this.thumbnails()}
             </div>
         );
     }

@@ -4,13 +4,13 @@ const ensureDir = require('ensureDir');
 const osenv = require('osenv');
 const jsonfile = require('jsonfile');
 
-let configPath = path.resolve(osenv.home(), ".storybook");
-let configFile = path.resolve(configPath, "storybook.json");
+let configPath = path.resolve(osenv.home(), ".storybookauthor");
+let configFile = path.resolve(configPath, "storybookauthor.json");
 
 export default class AppSettings extends EventEmitter {
 
     static DEFAULT_USER_DATA_PATH: string = path.resolve(configPath, "user");
-    
+
     private _data: any;
     private _timestamp: number = 0;
 
