@@ -12,7 +12,9 @@
     "start": "tsc -v && yarn build && electron ./dist/main/main.js",
     "start-watch": "concurrently \"yarn watch\" \"electron ./dist/main/main.js\" ",
     "debug": "tsc -v && yarn build && electron ./dist/main/main.js --debug",
-    "restart": "electron ./dist/main/main.js"
+    "restart": "electron ./dist/main/main.js",
+    "version": "./version.sh $npm_package_version",
+    "test-version": "./version.sh $npm_package_version"
   },
   "repository": {
     "type": "git",
@@ -47,13 +49,17 @@
   "dependencies": {
     "electron": "^2.0.5",
     "electron-reload": "^1.2.5",
+    "ensureDir": "^1.0.6",
+    "jsonfile": "^4.0.0",
     "os": "^0.1.1",
+    "osenv": "^0.1.5",
     "performance-now": "^2.1.0",
     "prettyjson": "^1.2.1",
     "react": "^16.4.1",
     "react-bootstrap": "^0.32.1",
     "react-dom": "^16.4.1",
     "react-easy-chart": "^1.0.0",
+    "uuid": "^3.3.2",
     "yargs": "^12.0.1"
   }
 }
