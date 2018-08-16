@@ -153,12 +153,17 @@ export default class Model extends EventEmitter {
         return result;
     }
 
-    deletePage(page: Page): Page | undefined {
+    deletePage(page?: Page): Page | undefined {
+        page = page || this.activePage;
         let result: Page | undefined = undefined;
-        if (this.activeBook) {
+        if (this.activeBook && page) {
             result = this.activePage = this.activeBook.deletePage(page);
         }
         return result;
+    }
+
+    selectPage(page: Page): void {
+        this.activePage = page;
     }
 
     static getUUID(): string {

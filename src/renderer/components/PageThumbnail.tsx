@@ -1,7 +1,8 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
+import Page from '../model/Page';
 
-export interface PageThumbnailProps { }
+export interface PageThumbnailProps { page: Page, clickHandler: any }
 export interface PageThumbnailState { }
 
 export default class PageThumbnail extends React.Component<PageThumbnailProps, PageThumbnailState> {
@@ -14,12 +15,8 @@ export default class PageThumbnail extends React.Component<PageThumbnailProps, P
     componentDidMount() {
     }
 
-    onButtonClicked(action: string): void {
-        // console.log(`onButtonClicked: ${action}`);
-        switch (action) {
-            case 'action':
-                break;
-        }
+    onButtonClicked(event: any): void {
+        this.props.clickHandler(event, this);
     }
 
     //onchange="angular.element(this).scope().uploadImage(this.files)"
@@ -27,13 +24,13 @@ export default class PageThumbnail extends React.Component<PageThumbnailProps, P
 
     render() {
         return (
-            <div _ngcontent-c0="" className="preview">
-                <div _ngcontent-c0="" className="preview-white-background" ng-reflect-ng-style="[object Object]" style={{ border: 'none' }}>
-                    <div _ngcontent-c0="" className="preview-image-container">
-                        <img _ngcontent-c0="" className="preview-thumbnail" src="assets/previewBlock.png" />
+            <div className="preview" onClick={this.onButtonClicked.bind(this)}>
+                <div className="preview-white-background" style={{ border: 'none' }}>
+                    <div className="preview-image-container">
+                        <img className="preview-thumbnail" src="assets/previewBlock.png" />
                     </div>
-                    <div _ngcontent-c0="" className="preview-text-container">
-                        <p _ngcontent-c0=""></p>
+                    <div className="preview-text-container">
+                        <p></p>
                     </div>
                 </div>
             </div>
