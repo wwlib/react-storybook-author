@@ -10,7 +10,7 @@
     "watch": "tsc -w",
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "tsc -v && yarn build && electron ./dist/main/main.js",
-    "start-watch": "concurrently \"yarn watch\" \"electron ./dist/main/main.js\" ",
+    "start-watch": "yarn build && concurrently \"yarn watch\" \"electron ./dist/main/main.js\" ",
     "debug": "tsc -v && yarn build && electron ./dist/main/main.js --debug",
     "restart": "electron ./dist/main/main.js",
     "version": "./version.sh $npm_package_version",
