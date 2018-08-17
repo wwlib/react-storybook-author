@@ -6,3 +6,4 @@ yarn-error.log
 package-lock.json
 data/config.json
 .alm
+test-out.wav

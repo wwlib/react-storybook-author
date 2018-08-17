@@ -26,7 +26,7 @@ export default class Application extends React.Component < ApplicationProps, App
             console.log(`audio blob: `, blob);
             toBuffer(blob, (err, buffer) => {
               if (err) throw err
-              fs.writeFileSync( 'blob.wav', buffer );
+              fs.writeFileSync( 'test-out.wav', buffer );
             })
 
         });
