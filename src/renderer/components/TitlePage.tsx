@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
 import BottomNav from './BottomNav';
 
-export interface TitlePageProps { }
+export interface TitlePageProps { bottomNavClickHandler: any }
 export interface TitlePageState { }
 
 export default class TitlePage extends React.Component<TitlePageProps, TitlePageState> {
@@ -15,12 +15,8 @@ export default class TitlePage extends React.Component<TitlePageProps, TitlePage
     componentDidMount() {
     }
 
-    onButtonClicked(action: string): void {
-        // console.log(`onButtonClicked: ${action}`);
-        switch (action) {
-            case 'action':
-                break;
-        }
+    onBottomNavButtonClicked(event: any): void {
+        this.props.bottomNavClickHandler(event);
     }
 
     //onchange="angular.element(this).scope().uploadImage(this.files)"
@@ -49,7 +45,7 @@ export default class TitlePage extends React.Component<TitlePageProps, TitlePage
                     <div _ngcontent-c0="" id="pageNumber"> Title Page </div>
                 </div>
 
-                <BottomNav />
+                <BottomNav clickHandler={this.onBottomNavButtonClicked.bind(this)} />
 
             </div>
         );

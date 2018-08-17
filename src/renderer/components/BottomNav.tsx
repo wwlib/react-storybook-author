@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
 
-export interface BottomNavProps { }
+export interface BottomNavProps { clickHandler: any }
 export interface BottomNavState { }
 
 export default class BottomNav extends React.Component<BottomNavProps, BottomNavState> {
@@ -14,12 +14,8 @@ export default class BottomNav extends React.Component<BottomNavProps, BottomNav
     componentDidMount() {
     }
 
-    onButtonClicked(action: string): void {
-        // console.log(`onButtonClicked: ${action}`);
-        switch (action) {
-            case 'action':
-                break;
-        }
+    onButtonClicked(event: any) {
+        this.props.clickHandler(event);
     }
 
     //onchange="angular.element(this).scope().uploadImage(this.files)"
@@ -27,22 +23,23 @@ export default class BottomNav extends React.Component<BottomNavProps, BottomNav
 
     render() {
         return (
-            <div _ngcontent-c0="" className="bottomNav">
-                <div _ngcontent-c0="" className="bottomButtons">
-                    <div _ngcontent-c0="" className="bottomLeftButtons">
-                        <button _ngcontent-c0="" className="arrow" id="backButton" ng-reflect-ng-style="[object Object]" style={{ visibility: "visible" }}></button>
+            <div className="bottomNav" onClick={this.onButtonClicked.bind(this)} >
+                <div className="bottomButtons">
+                    <div className="bottomLeftButtons">
+                        <button className="arrow" id="backButton" style={{ visibility: "visible" }}></button>
                     </div>
-                    <div _ngcontent-c0="" className="bottomCenterButtons">
-                        <button _ngcontent-c0="" id="recordButton"></button>
+                    <div className="bottomCenterButtons">
+                        <button id="recordButton"></button>
+                        <button id="endRecordButton"></button>
 
-                        <p _ngcontent-c0="" style={{ verticalAlign: "middle", margin: "2px" }}>or</p>
+                        <p style={{ verticalAlign: "middle", margin: "2px" }}>or</p>
 
-                        <button _ngcontent-c0="" id="uploadAudioButton"></button>
-                        <input _ngcontent-c0="" accept="audio/wav" id="uploadAudioFileInput" ng-file-select="onFileSelect($files)" type="file" />
+                        <button id="uploadAudioButton"></button>
+                        <input accept="audio/wav" id="uploadAudioFileInput" type="file" />
 
                     </div>
-                    <div _ngcontent-c0="" className="bottomRightButtons">
-                        <button _ngcontent-c0="" className="arrow" id="nextButton"></button>
+                    <div className="bottomRightButtons">
+                        <button className="arrow" id="nextButton"></button>
                     </div>
                 </div>
             </div>

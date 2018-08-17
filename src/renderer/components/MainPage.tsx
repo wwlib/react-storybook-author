@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
 import BottomNav from './BottomNav';
 
-export interface MainPageProps { }
+export interface MainPageProps { bottomNavClickHandler: any }
 export interface MainPageState { }
 
 export default class MainPage extends React.Component<MainPageProps, MainPageState> {
@@ -15,12 +15,8 @@ export default class MainPage extends React.Component<MainPageProps, MainPageSta
     componentDidMount() {
     }
 
-    onButtonClicked(action: string): void {
-        // console.log(`onButtonClicked: ${action}`);
-        switch (action) {
-            case 'action':
-                break;
-        }
+    onBottomNavButtonClicked(event: any): void {
+        this.props.bottomNavClickHandler(event);
     }
 
     //onchange="angular.element(this).scope().uploadImage(this.files)"
@@ -28,7 +24,7 @@ export default class MainPage extends React.Component<MainPageProps, MainPageSta
 
     render() {
         return (
-            <div _ngcontent-c0="" id="mainPage" ng-reflect-ng-style="[object Object]" style={{ width: "1097px", height: "500px" }}>
+            <div id="mainPage" style={{ width: "1097px", height: "500px" }}>
                 <div _ngcontent-c0="" id="mainPageTopStory">
                     <div _ngcontent-c0="" id="imageContainer">
                         <button _ngcontent-c0="" className="imageUploadButton"></button>
@@ -49,7 +45,7 @@ export default class MainPage extends React.Component<MainPageProps, MainPageSta
                     <div _ngcontent-c0="" id="pageNumber"> Page 1 </div>
                 </div>
 
-                <BottomNav />
+                <BottomNav clickHandler={this.onBottomNavButtonClicked.bind(this)} />
 
             </div>
         );
