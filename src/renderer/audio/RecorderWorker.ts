@@ -17,10 +17,10 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 */
 
-var recLength = 0,
-  recBuffersL = [],
-  recBuffersR = [],
-  sampleRate;
+let recLength: number = 0;
+let recBuffersL: any = [];
+let recBuffersR: any = [];
+let sampleRate: number;
 
 this.onmessage = function(e){
   switch(e.data.command){
@@ -49,7 +49,7 @@ function init(config){
   sampleRate = config.sampleRate;
 }
 
-function record(inputBuffer){
+function record(inputBuffer: any[]){
   recBuffersL.push(inputBuffer[0]);
   recBuffersR.push(inputBuffer[1]);
   recLength += inputBuffer[0].length;
@@ -75,7 +75,7 @@ function exportMonoWAV(type){
 }
 
 function getBuffers() {
-  var buffers = [];
+  var buffers:Float32Array[] = [];
   buffers.push( mergeBuffers(recBuffersL, recLength) );
   buffers.push( mergeBuffers(recBuffersR, recLength) );
   this.postMessage(buffers);
