@@ -5,23 +5,36 @@ import Book from './Book';
 const jsonfile = require('jsonfile');
 const ensureDir = require('ensureDir');
 
-export default class BookSet {
+export type BookManagerOptions = {
+    userDataPath?: string;
+}
 
-    public model: Model;
+export default class BookManager {
+
+    private static _instance: BookManager;
+
     public bookNames: Map<string, string>;
+    public userDataPath: string | undefined;
 
-    constructor(model: Model) {
-        this.model = model;
+    constructor(options?: BookManagerOptions) {
+        options = options || {};
+        let defaultOptions: BookManagerOptions =  {
+            userDataPath: './'
+        }
+        options = Object.assign(defaultOptions, options);
+        this.userDataPath = options.userDataPath;
+
         this.bookNames = new  Map<string, string>();
+    }
+
+    static Instance(options?: BookManagerOptions)
+    {
+        return this._instance || (this._instance = new this(options));
     }
 
     addBook(book: Book): Book {
         this.bookNames.set(book.filename, book.title);
         return book;
-    }
-
-    getBookConnectionWithName(name: string): string | undefined {
-        return this.bookNames.get(name);
     }
 
     getBookNames(): string[] {
@@ -30,8 +43,8 @@ export default class BookSet {
 
     loadBookNames(): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            let userDataPath: string = path.resolve(this.model.userDataPath);
-            ensureDir(path.resolve(this.model.userDataPath), 0o755, (err: any) => {
+            let userDataPath: string = path.resolve(this.userDataPath);
+            ensureDir(path.resolve(this.userDataPath), 0o755, (err: any) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -83,7 +96,7 @@ export default class BookSet {
     saveBook(book: Book):  Promise<Book> {
         return new Promise<Book>((resolve, reject) => {
             let json: any = book.toJSON();
-            ensureDir(path.resolve(this.model.userDataPath), 0o755, (err: any) => {
+            ensureDir(path.resolve(this.userDataPath), 0o755, (err: any) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -132,7 +145,7 @@ export default class BookSet {
     }
 
     generateFilepathWithName(name: string): string {
-        return path.resolve(this.model.userDataPath, `${name}.json`);
+        return path.resolve(this.userDataPath, `${name}.json`);
     }
 
     load(filepath: string, cb: any){

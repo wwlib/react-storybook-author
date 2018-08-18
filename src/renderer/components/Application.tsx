@@ -8,28 +8,15 @@ import SideNav from './SideNav';
 import MainPage from './MainPage';
 import TitlePage from './TitlePage';
 import PageThumbnail from './PageThumbnail';
-import AudioController from '../audio/AudioController';
-
-const fs = require('fs');
-const toBuffer = require('blob-to-buffer');
 
 export interface ApplicationProps { model: Model }
 export interface ApplicationState { pageArray: Page[] }
 
 export default class Application extends React.Component < ApplicationProps, ApplicationState > {
 
-    public audioController: AudioController;
-
     componentWillMount() {
         this.setState({ });
-        this.audioController = new AudioController((blob: any) => {
-            console.log(`audio blob: `, blob);
-            toBuffer(blob, (err, buffer) => {
-              if (err) throw err
-              fs.writeFileSync( 'test-out.wav', buffer );
-            })
 
-        });
     }
 
     componentDidMount() {
@@ -58,10 +45,10 @@ export default class Application extends React.Component < ApplicationProps, App
         console.log(`onBottomeNavClick: `, nativeEvent.target.id);
         switch ( nativeEvent.target.id) {
             case 'recordButton':
-                this.audioController.startRecord();
+                this.props.model.startRecord();
                 break;
             case 'endRecordButton':
-                this.audioController.endRecord();
+                this.props.model.endRecord();
                 break;
             case 'uploadAudioButton':
                 break;

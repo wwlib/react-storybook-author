@@ -5,9 +5,11 @@ import WindowComponent from './WindowComponent';
 import { appVersion } from './AppVersion';
 import Book, { BookOptions } from './Book';
 import Page, { PageOptions } from './Page';
+import AudioManager from '../audio/AudioManager';
 
 const uuidv4 = require('uuid/v4');
 const now = require("performance-now");
+
 
 let appSettingsDataTemplate: any = require('../../../data/settings-template.json');
 
@@ -32,7 +34,9 @@ export default class Model extends EventEmitter {
                 this.saveAppSettings();
             } else {
                 this.initWithData(this.appSettings.data);
+
             }
+            AudioManager.Instance({ userDataPath: this.userDataPath });
             this.activeBook = new Book();
             this.emit('ready', this);
         });
@@ -97,6 +101,16 @@ export default class Model extends EventEmitter {
 
     onUpdate(): void {
         this.emit('updateModel');
+    }
+
+    // Audio audioController
+
+    startRecord(): void {
+        AudioManager.Instance().startRecord();
+    }
+
+    endRecord() {
+        AudioManager.Instance().endRecord();
     }
 
     // Window Management
