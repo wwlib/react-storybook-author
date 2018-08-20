@@ -85,13 +85,15 @@ export default class AudioManager {
         console.log("duration: ", durationSeconds);
         console.log(`exporting...`);
         this.audioRecorder.exportWAV((blob: Blob) => {
-            this.saveUserAudioBlob(blob, this.userDataPath, this.generateFilepath())
-                .then((filename: string) => {
-                    console.log(`saved: ${filename}`);
-                })
-                .catch((err: any) => {
-                    console.log(err);
-                })
+            if (this.userDataPath) {
+                this.saveUserAudioBlob(blob, this.userDataPath, this.generateFilepath())
+                    .then((filename: string) => {
+                        console.log(`saved: ${filename}`);
+                    })
+                    .catch((err: any) => {
+                        console.log(err);
+                    })
+            }
         });
     }
 

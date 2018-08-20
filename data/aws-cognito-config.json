@@ -1,0 +1,10 @@
+{
+    "cognito": {
+        "userPoolId": "us-east-1_Vhb3SQ2Rp",
+        "userPoolClientId": "emtvd7asb421geo11lconfacq",
+        "region": "us-east-1"
+    },
+    "api": {
+        "invokeUrl": "https://rg85k5xlzf.execute-api.us-east-1.amazonaws.com/prod"
+    }
+}

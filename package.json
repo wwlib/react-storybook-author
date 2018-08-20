@@ -48,6 +48,7 @@
     "typescript": "^2.9.2"
   },
   "dependencies": {
+    "amazon-cognito-identity-js": "^2.0.21",
     "blob-to-buffer": "^1.2.8",
     "electron": "^2.0.5",
     "electron-reload": "^1.2.5",

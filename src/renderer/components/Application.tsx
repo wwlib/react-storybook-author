@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
 import Model from '../model/Model';
 import Page from '../model/Page';
+import Login from './Login';
 import TopNav from './TopNav';
 import BottomNav from './BottomNav';
 import SideNav from './SideNav';
@@ -20,6 +21,17 @@ export default class Application extends React.Component < ApplicationProps, App
     }
 
     componentDidMount() {
+    }
+
+    onLoginClick(event: any): void {
+        let nativeEvent: any = event.nativeEvent;
+        switch ( nativeEvent.target.id) {
+            case 'signin':
+
+                break;
+            case 'signout':
+                break
+        }
     }
 
     onTopNavClick(event: any): void {
