@@ -6,6 +6,7 @@ import { appVersion } from './AppVersion';
 import Book, { BookOptions } from './Book';
 import Page, { PageOptions } from './Page';
 import AudioManager from '../audio/AudioManager';
+import BookManager from './BookManager';
 
 const uuidv4 = require('uuid/v4');
 const now = require("performance-now");
@@ -21,6 +22,8 @@ export default class Model extends EventEmitter {
     public panelZIndexMap: Map<string, number>;
     public activeBook: Book;
     public activePage: Page;
+
+    private _activeAuthToken: string;
 
     constructor() {
         super();
@@ -178,6 +181,17 @@ export default class Model extends EventEmitter {
 
     selectPage(page: Page): void {
         this.activePage = page;
+    }
+
+    //// AWS API
+
+    setActiveAuthToken(token: string): void {
+        this._activeAuthToken = token;
+    }
+
+    saveActiveBookToCloud(): void {
+        console.log(this.activeBook.toJSON());
+        BookManager.Instance().saveBookToCloud(this.activeBook, this._activeAuthToken);
     }
 
     static getUUID(): string {

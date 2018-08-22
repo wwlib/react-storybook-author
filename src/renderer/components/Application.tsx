@@ -9,25 +9,25 @@ import SideNav from './SideNav';
 import MainPage from './MainPage';
 import TitlePage from './TitlePage';
 import PageThumbnail from './PageThumbnail';
+import CloudBookList from './CloudBookLIst';
 
 export interface ApplicationProps { model: Model }
-export interface ApplicationState { pageArray: Page[] }
+export interface ApplicationState { pageArray: Page[], loggedIn: boolean, bookLoaded: boolean }
 
 export default class Application extends React.Component < ApplicationProps, ApplicationState > {
 
     componentWillMount() {
-        this.setState({ });
-
+        this.setState({ loggedIn: false, bookLoaded: false });
     }
 
     componentDidMount() {
     }
 
-    onLoginClick(event: any): void {
-        let nativeEvent: any = event.nativeEvent;
-        switch ( nativeEvent.target.id) {
+    onLoginClick(action: string): void {
+        switch ( action ) {
             case 'signin':
-
+                console.log(`Application: signin`);
+                this.setState({ loggedIn: true, bookLoaded: false });
                 break;
             case 'signout':
                 break
@@ -48,6 +48,9 @@ export default class Application extends React.Component < ApplicationProps, App
                 this.setState({ pageArray: this.props.model.activeBook.pageArray});
                 break;
             case 'hideSceneObjectsButton':
+                break;
+            case 'submitButton':
+                this.props.model.saveActiveBookToCloud();
                 break;
         }
     }
@@ -77,17 +80,36 @@ export default class Application extends React.Component < ApplicationProps, App
         this.props.model.selectPage(thumbnail.props.page);
     }
 
-    render() {
-        let pageArray: Page[] = [];
-        if (this.props.model.activeBook) {
-            pageArray = this.props.model.activeBook.pageArray
-        }
-        return(
-            <div>
-                <TopNav clickHandler={this.onTopNavClick.bind(this)} />
+    onCloudBookListClick(event: any, bookUUID: string): void {
+        let nativeEvent: any = event.nativeEvent;
+        console.log(`onCloudBookListClick: `, nativeEvent.target.id, bookUUID);
+        this.setState({ loggedIn: true, bookLoaded: true });
+    }
+
+    layout(): any {
+        let layout;
+        if (!this.state.loggedIn) {
+            layout = <Login model={this.props.model} clickHandler={this.onLoginClick.bind(this)} />
+        } else if (!this.state.bookLoaded){
+            let bookArray = [{uuid: "one"}, {uuid: "two"}, {uuid: "three"}];
+            layout = <CloudBookList clickHandler={this.onCloudBookListClick.bind(this)} bookArray={bookArray}/>
+        } else {
+            let pageArray: Page[] = [];
+            if (this.props.model.activeBook) {
+                pageArray = this.props.model.activeBook.pageArray
+            }
+            layout = <div>
+                <TopNav  clickHandler={this.onTopNavClick.bind(this)} />
                 <SideNav pageArray={pageArray} clickHandler={this.onSideNavClick.bind(this)}/>
                 <TitlePage bottomNavClickHandler={this.onBottomNavClick.bind(this)}/>
             </div>
+        }
+        return layout;
+    }
+
+    render() {
+        return(
+            this.layout()
         );
     }
 }

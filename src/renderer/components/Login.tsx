@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
 import Model from '../model/Model';
+const PasswordMask = require('react-password-mask');
 
 // https://docs.aws.amazon.com/cognito/latest/developerguide/using-amazon-cognito-user-identity-pools-javascript-examples.html
 
@@ -8,8 +9,8 @@ import { CognitoUserPool, CognitoUserAttribute, CognitoUser, AuthenticationDetai
 
 const aswCognitoConfig: any = require('../../../data/aws-cognito-config.json');
 
-export interface LoginProps { clickHandler: any }
-export interface LoginState { }
+export interface LoginProps { model: Model, clickHandler: any }
+export interface LoginState { username: string, password: string }
 
 export default class Login extends React.Component<LoginProps, LoginState> {
 
@@ -19,7 +20,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
 
     componentWillMount() {
         this.initCognito();
-        this.setState({});
+        this.setState({username: 'andrew.rapo@gmail.com', password: 'Andrew1234!'});
     }
 
     componentDidMount() {
@@ -102,18 +103,24 @@ export default class Login extends React.Component<LoginProps, LoginState> {
         });
     }
 
-    onButtonClicked(event: any): void {
-        // this.props.clickHandler(event);
+    handleSubmit(event: any) {
         let nativeEvent: any = event.nativeEvent;
-        switch ( nativeEvent.target.id) {
+        event.preventDefault();
+        this.login('signin');
+    }
+
+    login(action: string): void {
+        this.props.clickHandler(action);
+        switch ( action ) {
             case 'signin':
                 console.log(`signin`);
-                this.signin('andrew.rapo@gmail.com', 'Andrew1234!',
+                this.signin(this.state.username, this.state.password,
                     () => {
                         console.log('Successfully Logged In');
                         this.getAuthToken().then((token: string) => {
                             if (token) {
                                 console.log(token);
+                                this.props.model.setActiveAuthToken(token);
                             }
                         });
                     },
@@ -126,14 +133,34 @@ export default class Login extends React.Component<LoginProps, LoginState> {
         }
     }
 
+    handleInputChange(event: any) {
+        let nativeEvent: any = event.nativeEvent;
+        switch(nativeEvent.target.name) {
+            case 'username':
+                this.setState({ username: nativeEvent.target.value});
+                break;
+            case 'password':
+                this.setState({ password: nativeEvent.target.value});
+                break;
+        }
+    }
+
     render() {
         return (
-            <div className="login" onClick={this.onButtonClicked.bind(this)} >
-                <input id="email" />
-                <input id="password" />
-                <button id="signin" />
-                <button id="signout" />
-            </div>
+            <ReactBootstrap.Table bordered condensed hover style = {{width: 300}}>
+                <tbody>
+                <tr><td>
+                    <div className="login"  >
+                        <form onSubmit={this.handleSubmit.bind(this)} >
+                            <label>Signin:</label><br />
+                            <input ref="username" id="username" name="username" type="text" style = {{width: 300}} value={this.state.username} onChange={this.handleInputChange.bind(this)} /><br />
+                            <PasswordMask ref="password" id="password" name="password" style={{width: 300}} value={this.state.password} onChange={this.handleInputChange.bind(this)} /><br />
+                            <input type="submit" value="Submit" />
+                        </form>
+                    </div>
+                </td></tr>
+                </tbody>
+            </ReactBootstrap.Table>
         );
     }
 }

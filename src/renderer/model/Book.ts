@@ -61,13 +61,15 @@ export default class Book {
         json.filename = this.filename;
         json.title = this.title;
         json.currentPageNumber = this.currentPageNumber;
-        json.css = this.css;
-        json.config = this.config;
-        json.pages = [];
+        if (this.css) json.css = this.css;
+        // json.config = this.config;
+        let pages: any[] = [];
         this.pages.forEach((page: Page) => {
-            json.pages.push(page.toJSON());
+            pages.push(page.toJSON());
         })
-
+        if (pages && pages.length > 0) {
+            json.pages = pages;
+        }
         return json;
     }
 

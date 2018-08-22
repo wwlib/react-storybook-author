@@ -1,9 +1,12 @@
-const fs = require('fs');
-const path = require('path');
+import fetch from 'node-fetch';
 import Model from './Model';
 import Book from './Book';
+const fs = require('fs');
+const path = require('path');
 const jsonfile = require('jsonfile');
 const ensureDir = require('ensureDir');
+
+const aswCognitoConfig: any = require('../../../data/aws-cognito-config.json');
 
 export type BookManagerOptions = {
     userDataPath?: string;
@@ -169,4 +172,69 @@ export default class BookManager {
             }
       });
     }
+
+    //// AWS API
+
+    // {
+    //   "path": "/save",
+    //   "httpMethod": "POST",
+    //   "headers": {
+    //     "Accept": "*/*",
+    //     "Authorization": "eyJraWQiOiJLTzRVMWZs",
+    //     "content-type": "application/json; charset=UTF-8"
+    //   },
+    //   "queryStringParameters": null,
+    //   "pathParameters": null,
+    //   "requestContext": {
+    //     "authorizer": {
+    //       "claims": {
+    //         "cognito:username": "the_username"
+    //       }
+    //     }
+    //   },
+    //   "body": "{ \"storybookId\": \"abcd-efgh-ijkl-mnop\", \"data\": { \"pageCount\": 1 } }"
+    // }
+
+    // $.ajax({
+    //     method: 'POST',
+    //     url: _config.api.invokeUrl + '/save',
+    //     headers: {
+    //         Authorization: authToken
+    //     },
+    //     data: JSON.stringify({
+    //         storybookId: "qrst-uvwx-yz12-3456", data: { "pageCount": 3 }
+    //     }),
+    //     contentType: 'application/json',
+    //     success: completeRequest,
+    //     error: function ajaxError(jqXHR, textStatus, errorThrown) {
+    //         console.error('Error requesting ride: ', textStatus, ', Details: ', errorThrown);
+    //         console.error('Response: ', jqXHR.responseText);
+    //         alert('An error occured when requesting your unicorn:\n' + jqXHR.responseText);
+    //     }
+    // });
+
+    saveBookToCloud(book: Book, authToken: string): void {
+        let path: string = aswCognitoConfig.api.invokeUrl + '/save';
+        console.log(aswCognitoConfig, path);
+        let headers: any = {
+            Authorization: authToken
+        }
+        console.log(book.toJSON());
+        console.log(JSON.stringify(book.toJSON(), null, 2));
+        let body: any = JSON.stringify({ storybookId: book.uuid, data: book.toJSON() });
+        console.log(body);
+        fetch(path, { method: 'POST', body: body, headers: headers })
+            .then(res => console.log(res));
+            // .then(res => res.json())
+            // .then(json => console.log(json));
+    }
+
+    retrieveBookFromCloudWithUUID(uuid: string) {
+
+    }
+
+    retrieveBookFromCloudWithUsername(username: string) {
+        
+    }
+
 }
