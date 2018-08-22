@@ -12,26 +12,23 @@ import PageThumbnail from './PageThumbnail';
 import CloudBookList from './CloudBookLIst';
 
 export interface ApplicationProps { model: Model }
-export interface ApplicationState { pageArray: Page[], loggedIn: boolean, bookLoaded: boolean }
+export interface ApplicationState { pageArray: Page[], loggedIn: boolean, bookLoaded: boolean, bookVersions: any[] }
 
 export default class Application extends React.Component < ApplicationProps, ApplicationState > {
 
     componentWillMount() {
-        this.setState({ loggedIn: false, bookLoaded: false });
+        this.setState({ loggedIn: false, bookLoaded: false, bookVersions: [] });
     }
 
     componentDidMount() {
     }
 
-    onLoginClick(action: string): void {
-        switch ( action ) {
-            case 'signin':
-                console.log(`Application: signin`);
-                this.setState({ loggedIn: true, bookLoaded: false });
-                break;
-            case 'signout':
-                break
-        }
+    onLoginClick(username: string, password): void {
+        console.log(`Application: onLoginClick`);
+        this.props.model.login(username, password)
+            .then((bookVersions: any[]) => {
+                this.setState({ loggedIn: true, bookLoaded: false, bookVersions: bookVersions });
+            });
     }
 
     onTopNavClick(event: any): void {
@@ -80,9 +77,9 @@ export default class Application extends React.Component < ApplicationProps, App
         this.props.model.selectPage(thumbnail.props.page);
     }
 
-    onCloudBookListClick(event: any, bookUUID: string): void {
+    onCloudBookListClick(event: any, bookUUID: string, version: string): void {
         let nativeEvent: any = event.nativeEvent;
-        console.log(`onCloudBookListClick: `, nativeEvent.target.id, bookUUID);
+        console.log(`onCloudBookListClick: `, nativeEvent.target.id, nativeEvent.target.name, bookUUID, version);
         this.setState({ loggedIn: true, bookLoaded: true });
     }
 
@@ -91,8 +88,8 @@ export default class Application extends React.Component < ApplicationProps, App
         if (!this.state.loggedIn) {
             layout = <Login model={this.props.model} clickHandler={this.onLoginClick.bind(this)} />
         } else if (!this.state.bookLoaded){
-            let bookArray = [{uuid: "one"}, {uuid: "two"}, {uuid: "three"}];
-            layout = <CloudBookList clickHandler={this.onCloudBookListClick.bind(this)} bookArray={bookArray}/>
+            // let bookVersions = [{storybookId: "one"}, {storybookId: "two"}, {storybookId: "three"}];
+            layout = <CloudBookList clickHandler={this.onCloudBookListClick.bind(this)} bookVersions={this.state.bookVersions}/>
         } else {
             let pageArray: Page[] = [];
             if (this.props.model.activeBook) {

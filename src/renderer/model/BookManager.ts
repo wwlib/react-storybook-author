@@ -213,28 +213,54 @@ export default class BookManager {
     //     }
     // });
 
-    saveBookToCloud(book: Book, authToken: string): void {
-        let path: string = aswCognitoConfig.api.invokeUrl + '/save';
-        console.log(aswCognitoConfig, path);
-        let headers: any = {
-            Authorization: authToken
-        }
-        console.log(book.toJSON());
-        console.log(JSON.stringify(book.toJSON(), null, 2));
-        let body: any = JSON.stringify({ storybookId: book.uuid, data: book.toJSON() });
-        console.log(body);
-        fetch(path, { method: 'POST', body: body, headers: headers })
-            .then(res => console.log(res));
-            // .then(res => res.json())
-            // .then(json => console.log(json));
+    saveBookToCloud(authToken: string, book: Book): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            let path: string = aswCognitoConfig.api.invokeUrl + '/save';
+            console.log(aswCognitoConfig, path);
+            let headers: any = {
+                Authorization: authToken
+            }
+            console.log(book.toJSON());
+            console.log(JSON.stringify(book.toJSON(), null, 2));
+            let body: any = JSON.stringify({ storybookId: book.uuid, data: book.toJSON() });
+            console.log(body);
+            fetch(path, { method: 'POST', body: body, headers: headers })
+                .then(res => resolve(res));
+                // .then(res => res.json())
+                // .then(json => console.log(json));
+        });
     }
 
-    retrieveBookFromCloudWithUUID(uuid: string) {
-
+    retrieveBookFromCloudWithUUID(authToken: string, uuid: string, version?: string): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            let path: string = aswCognitoConfig.api.invokeUrl + '/retrieve';
+            console.log(aswCognitoConfig, path);
+            let headers: any = {
+                Authorization: authToken
+            }
+            let body: any = JSON.stringify({ storybookId: uuid, version: version });
+            console.log(body, path, headers);
+            fetch(path, { method: 'POST', body: body, headers: headers })
+                // .then((res: any) => console.log(res))
+                .then((res: any) => res.json())
+                .then(json => resolve(json));
+        });
     }
 
-    retrieveBookFromCloudWithUsername(username: string) {
-        
+    retrieveBooklistFromCloudWithUsername(authToken: string, username?: string): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            let path: string = aswCognitoConfig.api.invokeUrl + '/storybooklist';
+            console.log(aswCognitoConfig, path);
+            let headers: any = {
+                Authorization: authToken
+            }
+            let body: any = JSON.stringify({ author:username });
+            console.log(body, path, headers);
+            fetch(path, { method: 'POST', body: body, headers: headers })
+                // .then((res: any) => console.log(res))
+                .then((res: any) => res.json())
+                .then(json => resolve(json));
+        })
     }
 
 }

@@ -8,6 +8,11 @@ import Page, { PageOptions } from './Page';
 import AudioManager from '../audio/AudioManager';
 import BookManager from './BookManager';
 
+// https://docs.aws.amazon.com/cognito/latest/developerguide/using-amazon-cognito-user-identity-pools-javascript-examples.html
+import { CognitoUserPool, CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
+const aswCognitoConfig: any = require('../../../data/aws-cognito-config.json');
+
+
 const uuidv4 = require('uuid/v4');
 const now = require("performance-now");
 
@@ -21,9 +26,13 @@ export default class Model extends EventEmitter {
     public statusMessages: string;
     public panelZIndexMap: Map<string, number>;
     public activeBook: Book;
+    public activeBookVersions: any[];
     public activePage: Page;
 
     private _activeAuthToken: string;
+    public poolData: any;
+    public userPool: CognitoUserPool | undefined;
+    public authToken: string;
 
     constructor() {
         super();
@@ -41,11 +50,13 @@ export default class Model extends EventEmitter {
             }
             AudioManager.Instance({ userDataPath: this.userDataPath });
             this.activeBook = new Book();
+            this.activeBookVersions = [];
             this.emit('ready', this);
         });
 
         // this.quiz = new Quiz();
         this.statusMessages = '';
+        this.initCognito();
     }
 
     initWithData(data: any): void {
@@ -157,6 +168,7 @@ export default class Model extends EventEmitter {
 
     newBook(options?: BookOptions): Book {
         this.activeBook = new Book(options);
+        this.activeBookVersions = [];
         return this.activeBook;
     }
 
@@ -185,13 +197,116 @@ export default class Model extends EventEmitter {
 
     //// AWS API
 
+    initCognito(): void {
+        if (!(aswCognitoConfig.cognito.userPoolId &&
+            aswCognitoConfig.cognito.userPoolClientId &&
+            aswCognitoConfig.cognito.region)) {
+            console.log('Cognito user pool data incomplete!')
+        } else {
+            this.poolData = {
+                UserPoolId: aswCognitoConfig.cognito.userPoolId,
+                ClientId: aswCognitoConfig.cognito.userPoolClientId
+            };
+            this.userPool = new CognitoUserPool(this.poolData);
+        }
+    }
+
+    createCognitoUser(email): CognitoUser | undefined {
+        let cognitoUser: CognitoUser | undefined = undefined;
+        if (this.userPool) {
+            cognitoUser = new CognitoUser({
+                Username: this.toUsername(email),
+                Pool: this.userPool
+            });
+        }
+        return cognitoUser;
+    }
+
+    toUsername(email) {
+        return email.replace('@', '-at-');
+    }
+
+    signin(email: string, password: string, onSuccess: any, onFailure: any) {
+        var authenticationDetails = new AuthenticationDetails({
+            Username: this.toUsername(email),
+            Password: password
+        });
+
+        var cognitoUser = this.createCognitoUser(email);
+        if (cognitoUser) {
+            cognitoUser.authenticateUser(authenticationDetails, {
+                onSuccess: onSuccess,
+                onFailure: onFailure
+            });
+        }
+    }
+
+    signOut() {
+        if (this.userPool) {
+            let currentUser = this.userPool.getCurrentUser();
+            if (currentUser) {
+                currentUser.signOut();
+            }
+        }
+    }
+
+    login(username: string, password: string): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            this.signin(username, password,
+                () => {
+                    console.log('Successfully Logged In');
+                    this.getAuthToken().then((token: string) => {
+                        if (token) {
+                            console.log(token);
+                            this.setActiveAuthToken(token);
+                            BookManager.Instance().retrieveBooklistFromCloudWithUsername(this._activeAuthToken)
+                                .then((result: any) => {
+                                    console.log(`bookVersions: `, result, result.versions);
+                                    if (result.versions) {
+                                        this.activeBookVersions = result.versions;
+                                    }
+                                    resolve(result.versions);
+                                });
+                        }
+                    });
+                },
+                (err) => { console.log(err), reject(err)}
+            )
+        })
+    }
+
+
+    getAuthToken(): Promise<string> {
+        return new Promise((resolve, reject) => {
+            if (this.userPool) {
+                var cognitoUser = this.userPool.getCurrentUser();
+
+                if (cognitoUser) {
+                    cognitoUser.getSession(function sessionCallback(err, session) {
+                        if (err) {
+                            reject(err);
+                        } else if (!session.isValid()) {
+                            resolve('');
+                        } else {
+                            resolve(session.getIdToken().getJwtToken());
+                        }
+                    });
+                } else {
+                    resolve('');
+                }
+            } else {
+                resolve('');
+            }
+        });
+    }
+
     setActiveAuthToken(token: string): void {
         this._activeAuthToken = token;
     }
 
     saveActiveBookToCloud(): void {
         console.log(this.activeBook.toJSON());
-        BookManager.Instance().saveBookToCloud(this.activeBook, this._activeAuthToken);
+        BookManager.Instance().saveBookToCloud(this._activeAuthToken, this.activeBook);
     }
 
     static getUUID(): string {
