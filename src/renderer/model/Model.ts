@@ -266,7 +266,10 @@ export default class Model extends EventEmitter {
                                         this.activeBookVersions = result.versions;
                                     }
                                     resolve(result.versions);
-                                });
+                                })
+                                .catch(() => {
+                                    reject();
+                                })
                         }
                     });
                 },
@@ -275,12 +278,30 @@ export default class Model extends EventEmitter {
         })
     }
 
+    retrieveBookFromCloudWithUUID(storybookId: string, version?:string): Promise<Book> {
+        return new Promise<Book>((resolve, reject) => {
+            BookManager.Instance().retrieveBookFromCloudWithUUID(this._activeAuthToken,storybookId, version)
+                .then((result: any) => {
+                    console.log(`Storybook: `, result, result.Storybook);
+                    if (result.Storybook && result.Storybook.Data) {
+                        let book:Book = new Book(result.Storybook.Data);
+                        this.activeBook = book;
+                        resolve(book);
+                    } else {
+                        reject();
+                    }
+
+                })
+                .catch(() => {
+                    reject();
+                })
+        })
+    }
 
     getAuthToken(): Promise<string> {
         return new Promise((resolve, reject) => {
             if (this.userPool) {
                 var cognitoUser = this.userPool.getCurrentUser();
-
                 if (cognitoUser) {
                     cognitoUser.getSession(function sessionCallback(err, session) {
                         if (err) {

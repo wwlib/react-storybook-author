@@ -234,12 +234,11 @@ export default class BookManager {
     retrieveBookFromCloudWithUUID(authToken: string, uuid: string, version?: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             let path: string = aswCognitoConfig.api.invokeUrl + '/retrieve';
-            console.log(aswCognitoConfig, path);
             let headers: any = {
                 Authorization: authToken
             }
             let body: any = JSON.stringify({ storybookId: uuid, version: version });
-            console.log(body, path, headers);
+            console.log(body);
             fetch(path, { method: 'POST', body: body, headers: headers })
                 // .then((res: any) => console.log(res))
                 .then((res: any) => res.json())
@@ -250,12 +249,11 @@ export default class BookManager {
     retrieveBooklistFromCloudWithUsername(authToken: string, username?: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             let path: string = aswCognitoConfig.api.invokeUrl + '/storybooklist';
-            console.log(aswCognitoConfig, path);
             let headers: any = {
                 Authorization: authToken
             }
             let body: any = JSON.stringify({ author:username });
-            console.log(body, path, headers);
+            console.log(body);
             fetch(path, { method: 'POST', body: body, headers: headers })
                 // .then((res: any) => console.log(res))
                 .then((res: any) => res.json())
