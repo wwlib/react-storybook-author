@@ -11,11 +11,12 @@ const aswCognitoConfig: any = require('../../../data/aws-cognito-config.json');
 export type BookVersion = {
     id: string;
     timestamp: string;
+    author: string;
 }
 
 export type BookData = {
     id: string;
-    versions: BookVersion[]
+    versions: BookVersion[];
 }
 
 export type BookDataList = {
@@ -228,6 +229,16 @@ export default class BookManager {
     //     }
     // });
 
+    /* save results
+    Response:
+    {
+      "statusCode": 201,
+      "body": "{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"author\":\"the_username\",\"timestamp\":\"2018-08-23T20:18:12.810Z\"}",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    }
+    */
     saveBookToCloud(authToken: string, book: Book): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             let path: string = aswCognitoConfig.api.invokeUrl + '/save';
@@ -246,6 +257,16 @@ export default class BookManager {
         });
     }
 
+    /*
+    Response:
+    {
+      "statusCode": 201,
+      "body": "{\"author\":\"the_username\",\"versions\":[{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"timestamp\":\"2018-08-20T00:00:10.003Z\",\"author\":\"the_username\"},{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"timestamp\":\"2018-08-20T00:35:48.963Z\",\"author\":\"the_username\"},{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"timestamp\":\"2018-08-23T20:15:56.971Z\",\"author\":\"the_username\"},{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"timestamp\":\"2018-08-23T20:18:12.810Z\",\"author\":\"the_username\"},{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"timestamp\":\"2018-08-19T22:18:58.351Z\",\"author\":\"the_username\"},{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"timestamp\":\"2018-08-19T21:29:18.194Z\",\"author\":\"the_username\"}]}",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    }
+    */
     retrieveBookFromCloudWithUUID(authToken: string, uuid: string, version?: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             let path: string = aswCognitoConfig.api.invokeUrl + '/retrieve';
@@ -261,6 +282,15 @@ export default class BookManager {
         });
     }
 
+    /*
+    {
+      "statusCode": 201,
+      "body": "{\"author\":\"the_username\",\"versions\":[{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"timestamp\":\"2018-08-20T00:00:10.003Z\",\"author\":\"the_username\"},{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"timestamp\":\"2018-08-20T00:35:48.963Z\",\"author\":\"the_username\"},{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"timestamp\":\"2018-08-23T20:15:56.971Z\",\"author\":\"the_username\"},{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"timestamp\":\"2018-08-23T20:18:12.810Z\",\"author\":\"the_username\"},{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"timestamp\":\"2018-08-19T22:18:58.351Z\",\"author\":\"the_username\"},{\"storybookId\":\"abcd-efgh-ijkl-mnop\",\"timestamp\":\"2018-08-19T21:29:18.194Z\",\"author\":\"the_username\"}]}",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    }
+    */
     retrieveBooklistFromCloudWithAuthor(authToken: string, author?: string): Promise<BookDataList> {
         return new Promise<BookDataList>((resolve, reject) => {
             let path: string = aswCognitoConfig.api.invokeUrl + '/storybooklist';
@@ -283,14 +313,15 @@ export default class BookManager {
             author: '',
             list: []
         }
-        if (data && data.Author && data.Versions) {
+        if (data && data.author && data.versions) {
             let books: Map<string, BookVersion[]> = new  Map<string, BookVersion[]>();
-            result.author = data.Author;
-            data.Versions.forEach((versionData: any) => {
-                if (versionData.StorybookId && versionData.Timestamp) {
+            result.author = data.author;
+            data.versions.forEach((versionData: any) => {
+                if (versionData.storybookId && versionData.timestamp) {
                     let version: BookVersion = {
-                        id: versionData.StorybookId,
-                        timestamp: versionData.Timestamp
+                        id: versionData.storybookId,
+                        timestamp: versionData.timestamp,
+                        author: versionData.author
                     }
                     let versionList: BookVersion[] | undefined = books.get(version.id);
                     if (!versionList) {

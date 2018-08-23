@@ -299,9 +299,9 @@ export default class Model extends EventEmitter {
         return new Promise<Book>((resolve, reject) => {
             BookManager.Instance().retrieveBookFromCloudWithUUID(this._activeAuthToken,storybookId, version)
                 .then((result: any) => {
-                    console.log(`Storybook: `, result, result.Storybook);
-                    if (result.Storybook && result.Storybook.Data) {
-                        let book:Book = new Book(result.Storybook.Data);
+                    console.log(`retrieveBookFromCloudWithUUID: result: `, result);
+                    if (result.storybookRecord && result.storybookRecord.Data) {
+                        let book:Book = new Book(result.storybookRecord.Data);
                         this.activeBook = book;
                         resolve(book);
                     } else {

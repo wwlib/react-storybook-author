@@ -37,7 +37,7 @@ export default class CloudBookList extends React.Component<CloudBookListProps, C
                 bookData.versions.forEach((version: BookVersion) => {
                     let id: string = `${version.id},${version.timestamp}`;
                     let label: string = `${version.id} - (${version.timestamp})`;
-                    let button = <ReactBootstrap.Button bsStyle={"info"} key={id} name={id} id={id} style={{width: 600}}>{label}</ReactBootstrap.Button>
+                    let button = <ReactBootstrap.Button bsStyle={"default"} key={id} name={id} id={id} style={{width: 600}}>{label}</ReactBootstrap.Button>
                     result.push(button);
                 })
             })
