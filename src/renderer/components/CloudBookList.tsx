@@ -2,8 +2,9 @@ import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
 import Model from '../model/Model';
 import Login from './Login';
+import { BookDataList, BookData, BookVersion } from '../model/BookManager';
 
-export interface CloudBookListProps { clickHandler: any, bookVersions: any[] }
+export interface CloudBookListProps { clickHandler: any, bookDataList: BookDataList | undefined }
 export interface CloudBookListState { }
 
 export default class CloudBookList extends React.Component<CloudBookListProps, CloudBookListState> {
@@ -25,12 +26,16 @@ export default class CloudBookList extends React.Component<CloudBookListProps, C
 
     books(): JSX.Element[] {
         let result: JSX.Element[] = [];
-        if (this.props.bookVersions) {
-            this.props.bookVersions.forEach((version: any) => {
-                let id: string = `${version.StorybookId},${version.Timestamp}`;
-                let label: string = `${version.StorybookId} - (${version.Timestamp})`;
-                let button = <ReactBootstrap.Button bsStyle={"info"} key={id} name={id} id={id} style={{width: 600}}>{label}</ReactBootstrap.Button>
-                result.push(button);
+        if (this.props.bookDataList) {
+            this.props.bookDataList.list.forEach((bookData: BookData) => {
+                let id: string = bookData.id;
+                result.push(<ReactBootstrap.Button bsStyle={"info"} key={id} name={id} id={id} style={{width: 600}}>{id}</ReactBootstrap.Button>);
+                bookData.versions.forEach((version: BookVersion) => {
+                    let id: string = `${version.id},${version.timestamp}`;
+                    let label: string = `${version.id} - (${version.timestamp})`;
+                    let button = <ReactBootstrap.Button bsStyle={"info"} key={id} name={id} id={id} style={{width: 600}}>{label}</ReactBootstrap.Button>
+                    result.push(button);
+                })
             })
         }
         return result;

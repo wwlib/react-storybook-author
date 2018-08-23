@@ -8,6 +8,21 @@ const ensureDir = require('ensureDir');
 
 const aswCognitoConfig: any = require('../../../data/aws-cognito-config.json');
 
+export type BookVersion = {
+    id: string;
+    timestamp: string;
+}
+
+export type BookData = {
+    id: string;
+    versions: BookVersion[]
+}
+
+export type BookDataList = {
+    author: string;
+    list: BookData[];
+}
+
 export type BookManagerOptions = {
     userDataPath?: string;
 }
@@ -246,8 +261,8 @@ export default class BookManager {
         });
     }
 
-    retrieveBooklistFromCloudWithUsername(authToken: string, username?: string): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    retrieveBooklistFromCloudWithUsername(authToken: string, username?: string): Promise<BookDataList> {
+        return new Promise<BookDataList>((resolve, reject) => {
             let path: string = aswCognitoConfig.api.invokeUrl + '/storybooklist';
             let headers: any = {
                 Authorization: authToken
@@ -257,8 +272,49 @@ export default class BookManager {
             fetch(path, { method: 'POST', body: body, headers: headers })
                 // .then((res: any) => console.log(res))
                 .then((res: any) => res.json())
-                .then(json => resolve(json));
+                .then(json => {
+                    resolve(this.parseBookList(json));
+                })
         })
     }
 
+    parseBookList(data: any): BookDataList | undefined {
+        let result: BookDataList = {
+            author: '',
+            list: []
+        }
+        if (data && data.Author && data.Versions) {
+            let books: Map<string, BookVersion[]> = new  Map<string, BookVersion[]>();
+            result.author = data.Author;
+            data.Versions.forEach((versionData: any) => {
+                if (versionData.StorybookId && versionData.Timestamp) {
+                    let version: BookVersion = {
+                        id: versionData.StorybookId,
+                        timestamp: versionData.Timestamp
+                    }
+                    let versionList: BookVersion[] | undefined = books.get(version.id);
+                    if (!versionList) {
+                        versionList = []
+                    }
+                    versionList.push(version)
+                    books.set(version.id, versionList)
+                }
+            });
+            let bookIds: string[] = Array.from(books.keys());
+            bookIds.forEach((id: string) => {
+                let versions: BookVersion[] | undefined =  books.get(id);
+                if (versions) {
+                    let bookData: BookData = {
+                        id: id,
+                        versions: versions
+                    }
+                    result.list.push(bookData);
+                }
+
+            })
+            return result;
+        } else {
+            return undefined;
+        }
+    }
 }

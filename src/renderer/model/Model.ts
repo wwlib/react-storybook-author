@@ -6,7 +6,7 @@ import { appVersion } from './AppVersion';
 import Book, { BookOptions } from './Book';
 import Page, { PageOptions } from './Page';
 import AudioManager from '../audio/AudioManager';
-import BookManager from './BookManager';
+import BookManager, { BookDataList } from './BookManager';
 
 // https://docs.aws.amazon.com/cognito/latest/developerguide/using-amazon-cognito-user-identity-pools-javascript-examples.html
 import { CognitoUserPool, CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
@@ -26,7 +26,7 @@ export default class Model extends EventEmitter {
     public statusMessages: string;
     public panelZIndexMap: Map<string, number>;
     public activeBook: Book;
-    public activeBookVersions: any[];
+    public activeBookDataList: BookDataList | undefined;
     public activePage: Page;
 
     private _activeAuthToken: string;
@@ -50,7 +50,7 @@ export default class Model extends EventEmitter {
             }
             AudioManager.Instance({ userDataPath: this.userDataPath });
             this.activeBook = new Book();
-            this.activeBookVersions = [];
+            this.activeBookDataList = undefined;
             this.emit('ready', this);
         });
 
@@ -168,7 +168,7 @@ export default class Model extends EventEmitter {
 
     newBook(options?: BookOptions): Book {
         this.activeBook = new Book(options);
-        this.activeBookVersions = [];
+        this.activeBookDataList = undefined;
         return this.activeBook;
     }
 
@@ -250,8 +250,8 @@ export default class Model extends EventEmitter {
         }
     }
 
-    login(username: string, password: string): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    login(username: string, password: string): Promise<BookDataList> {
+        return new Promise<BookDataList>((resolve, reject) => {
             this.signin(username, password,
                 () => {
                     console.log('Successfully Logged In');
@@ -260,12 +260,12 @@ export default class Model extends EventEmitter {
                             console.log(token);
                             this.setActiveAuthToken(token);
                             BookManager.Instance().retrieveBooklistFromCloudWithUsername(this._activeAuthToken)
-                                .then((result: any) => {
-                                    console.log(`bookVersions: `, result, result.versions);
-                                    if (result.versions) {
-                                        this.activeBookVersions = result.versions;
+                                .then((bookDataList: BookDataList) => {
+                                    console.log(`bookDataList: `, bookDataList);
+                                    if (bookDataList) {
+                                        this.activeBookDataList = bookDataList;
                                     }
-                                    resolve(result.versions);
+                                    resolve(bookDataList);
                                 })
                                 .catch(() => {
                                     reject();

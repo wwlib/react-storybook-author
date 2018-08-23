@@ -10,14 +10,15 @@ import MainPage from './MainPage';
 import TitlePage from './TitlePage';
 import PageThumbnail from './PageThumbnail';
 import CloudBookList from './CloudBookLIst';
+import { BookDataList } from '../model/BookManager';
 
 export interface ApplicationProps { model: Model }
-export interface ApplicationState { pageArray: Page[], loggedIn: boolean, bookLoaded: boolean, bookVersions: any[] }
+export interface ApplicationState { pageArray: Page[], loggedIn: boolean, bookLoaded: boolean, bookDataList: BookDataList | undefined }
 
 export default class Application extends React.Component < ApplicationProps, ApplicationState > {
 
     componentWillMount() {
-        this.setState({ loggedIn: false, bookLoaded: false, bookVersions: [] });
+        this.setState({ loggedIn: false, bookLoaded: false, bookDataList: undefined });
     }
 
     componentDidMount() {
@@ -26,8 +27,8 @@ export default class Application extends React.Component < ApplicationProps, App
     onLoginClick(username: string, password): void {
         console.log(`Application: onLoginClick`);
         this.props.model.login(username, password)
-            .then((bookVersions: any[]) => {
-                this.setState({ loggedIn: true, bookLoaded: false, bookVersions: bookVersions });
+            .then((bookDataList: BookDataList) => {
+                this.setState({ loggedIn: true, bookLoaded: false, bookDataList: bookDataList });
             });
     }
 
@@ -94,8 +95,8 @@ export default class Application extends React.Component < ApplicationProps, App
         if (!this.state.loggedIn) {
             layout = <Login model={this.props.model} clickHandler={this.onLoginClick.bind(this)} />
         } else if (!this.state.bookLoaded){
-            // let bookVersions = [{storybookId: "one"}, {storybookId: "two"}, {storybookId: "three"}];
-            layout = <CloudBookList clickHandler={this.onCloudBookListClick.bind(this)} bookVersions={this.state.bookVersions}/>
+            // let bookDataList = [{storybookId: "one"}, {storybookId: "two"}, {storybookId: "three"}];
+            layout = <CloudBookList clickHandler={this.onCloudBookListClick.bind(this)} bookDataList={this.state.bookDataList}/>
         } else {
             let pageArray: Page[] = [];
             if (this.props.model.activeBook) {
