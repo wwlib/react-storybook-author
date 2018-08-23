@@ -261,13 +261,13 @@ export default class BookManager {
         });
     }
 
-    retrieveBooklistFromCloudWithUsername(authToken: string, username?: string): Promise<BookDataList> {
+    retrieveBooklistFromCloudWithAuthor(authToken: string, author?: string): Promise<BookDataList> {
         return new Promise<BookDataList>((resolve, reject) => {
             let path: string = aswCognitoConfig.api.invokeUrl + '/storybooklist';
             let headers: any = {
                 Authorization: authToken
             }
-            let body: any = JSON.stringify({ author:username });
+            let body: any = JSON.stringify({ author:author });
             console.log(body);
             fetch(path, { method: 'POST', body: body, headers: headers })
                 // .then((res: any) => console.log(res))

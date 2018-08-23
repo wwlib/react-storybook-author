@@ -29,6 +29,8 @@ export default class TopNav extends React.Component<TopNavProps, TopNavState> {
                     </div>
                     <div className="topRightButtons">
                         <button id="submitButton" />
+                        <ReactBootstrap.Button bsStyle={"info"} key={"loadBook"} id={"loadBook"} style={{width: 80}}>Load</ReactBootstrap.Button>
+                        <ReactBootstrap.Button bsStyle={"info"} key={"signOut"} id={"signOut"} style={{width: 80}}>signOut</ReactBootstrap.Button>
                     </div>
                 </div>
             </div>

@@ -40,7 +40,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
                 <tr><td>
                     <div className="login"  >
                         <form onSubmit={this.handleSubmit.bind(this)} >
-                            <label>Signin:</label><br />
+                            <label>SignIn:</label><br />
                             <input ref="username" id="username" name="username" type="text" style = {{width: 300}} value={this.state.username} onChange={this.handleInputChange.bind(this)} /><br />
                             <PasswordMask ref="password" id="password" name="password" style={{width: 300}} value={this.state.password} onChange={this.handleInputChange.bind(this)} /><br />
                             <input type="submit" value="Submit" />

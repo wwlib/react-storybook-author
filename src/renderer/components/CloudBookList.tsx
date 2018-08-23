@@ -18,10 +18,14 @@ export default class CloudBookList extends React.Component<CloudBookListProps, C
 
     onButtonClicked(event: any) {
         let nativeEvent: any = event.nativeEvent;
-        let idParts: string[] = nativeEvent.target.id.split(',');
-        let bookUUID: string = idParts[0];
-        let version: string = idParts[1];
-        this.props.clickHandler(event ,bookUUID, version);
+        if (nativeEvent.target.id == 'newBook') {
+            this.props.clickHandler(event ,'newBook', undefined);
+        } else {
+            let idParts: string[] = nativeEvent.target.id.split(',');
+            let bookUUID: string = idParts[0];
+            let version: string = idParts[1];
+            this.props.clickHandler(event ,bookUUID, version);
+        }
     }
 
     books(): JSX.Element[] {
@@ -46,7 +50,7 @@ export default class CloudBookList extends React.Component<CloudBookListProps, C
             <div className="cloudBookList" onClick={this.onButtonClicked.bind(this)} >
                 <ReactBootstrap.ButtonGroup vertical style = {{width: 620}}>
                     {this.books()}
-                    <ReactBootstrap.Button bsStyle={"info"} key={'newBook'} id={'newBook'} style={{width: 300}}>New Book</ReactBootstrap.Button>
+                    <ReactBootstrap.Button bsStyle={"info"} key={'newBook'}  name={'newBook'} id={'newBook'} style={{width: 300}}>New Book</ReactBootstrap.Button>
                 </ReactBootstrap.ButtonGroup>
             </div>
         );

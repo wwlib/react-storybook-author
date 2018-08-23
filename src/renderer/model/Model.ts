@@ -259,12 +259,8 @@ export default class Model extends EventEmitter {
                         if (token) {
                             console.log(token);
                             this.setActiveAuthToken(token);
-                            BookManager.Instance().retrieveBooklistFromCloudWithUsername(this._activeAuthToken)
+                            this.retrieveBooklistFromCloudWithAuthor(token)
                                 .then((bookDataList: BookDataList) => {
-                                    console.log(`bookDataList: `, bookDataList);
-                                    if (bookDataList) {
-                                        this.activeBookDataList = bookDataList;
-                                    }
                                     resolve(bookDataList);
                                 })
                                 .catch(() => {
@@ -275,6 +271,27 @@ export default class Model extends EventEmitter {
                 },
                 (err) => { console.log(err), reject(err)}
             )
+        })
+    }
+
+    retrieveBooklistFromCloudWithAuthor(authToken?: string, author?: string, ): Promise<BookDataList> {
+        authToken = authToken || this._activeAuthToken;
+        return new Promise<BookDataList>((resolve, reject) => {
+            if (authToken) {
+                BookManager.Instance().retrieveBooklistFromCloudWithAuthor(authToken, author)
+                    .then((bookDataList: BookDataList) => {
+                        console.log(`bookDataList: `, bookDataList);
+                        if (bookDataList) {
+                            this.activeBookDataList = bookDataList;
+                        }
+                        resolve(bookDataList);
+                    })
+                    .catch(() => {
+                        reject();
+                    })
+            } else {
+                reject();
+            }
         })
     }
 

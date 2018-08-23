@@ -50,6 +50,17 @@ export default class Application extends React.Component < ApplicationProps, App
             case 'submitButton':
                 this.props.model.saveActiveBookToCloud();
                 break;
+            case 'loadBook':
+            this.props.model.retrieveBooklistFromCloudWithAuthor()
+                .then((bookDataList: BookDataList) => {
+                    this.setState({ loggedIn: true, bookLoaded: false, bookDataList: bookDataList });
+                });
+                break;
+            case 'signOut':
+                this.props.model.signOut();
+                this.setState({ loggedIn: false, bookLoaded: false, bookDataList: undefined });
+                break;
+
         }
     }
 
@@ -81,13 +92,18 @@ export default class Application extends React.Component < ApplicationProps, App
     onCloudBookListClick(event: any, bookUUID: string, version: string): void {
         let nativeEvent: any = event.nativeEvent;
         console.log(`onCloudBookListClick: `, nativeEvent.target.id, nativeEvent.target.name, bookUUID, version);
-        this.props.model.retrieveBookFromCloudWithUUID(bookUUID, version)
-            .then(() => {
-                this.setState({ loggedIn: true, bookLoaded: true });
-            })
-            .catch((err) => {
-                console.log(err);
-            })
+        if (bookUUID == "newBook") {
+            this.props.model.newBook();
+            this.setState({ loggedIn: true, bookLoaded: true });
+        } else {
+            this.props.model.retrieveBookFromCloudWithUUID(bookUUID, version)
+                .then(() => {
+                    this.setState({ loggedIn: true, bookLoaded: true });
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+        }
     }
 
     layout(): any {
