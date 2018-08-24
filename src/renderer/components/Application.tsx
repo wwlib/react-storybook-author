@@ -14,7 +14,7 @@ import { BookDataList } from '../model/BookManager';
 import Book from '../model/Book';
 
 export interface ApplicationProps { model: Model }
-export interface ApplicationState { pageArray: Page[], loggedIn: boolean, bookLoaded: boolean, bookDataList: BookDataList | undefined }
+export interface ApplicationState { pageArray: Page[], loggedIn: boolean, bookLoaded: boolean, bookDataList: BookDataList | undefined, activePage: Page }
 
 export default class Application extends React.Component < ApplicationProps, ApplicationState > {
 
@@ -35,8 +35,6 @@ export default class Application extends React.Component < ApplicationProps, App
 
     onTopNavClick(event: any): void {
         let nativeEvent: any = event.nativeEvent;
-        // console.log(`Application: onTopNavClick: `, event, arguments);
-        // console.log(nativeEvent.target, nativeEvent.target.id, nativeEvent.target.name, nativeEvent.target.value)
         switch ( nativeEvent.target.id) {
             case 'addPageButton':
                 this.props.model.addNewPage();
@@ -88,6 +86,7 @@ export default class Application extends React.Component < ApplicationProps, App
         console.log(`onSideNavClick: `, thumbnail);
         let nativeEvent: any = event.nativeEvent;
         this.props.model.selectPage(thumbnail.props.page);
+        this.setState({activePage: this.props.model.activePage});
     }
 
     onCloudBookListClick(event: any, bookUUID: string, version: string): void {
@@ -100,7 +99,7 @@ export default class Application extends React.Component < ApplicationProps, App
             this.props.model.retrieveBookFromCloudWithUUID(bookUUID, version)
                 .then((book: Book) => {
                     console.log(`Application: onCloudBookListClick: book: `, book, this.props.model.activePage);
-                    this.setState({ loggedIn: true, bookLoaded: true });
+                    this.setState({ loggedIn: true, bookLoaded: true, activePage: this.props.model.activePage});
                 })
                 .catch((err) => {
                     console.log(err);
@@ -114,8 +113,11 @@ export default class Application extends React.Component < ApplicationProps, App
         switch(nativeEvent.target.id) {
             case 'titleTextInput':
                 this.props.model.activePage.title = nativeEvent.target.value;
+                this.setState({activePage: this.props.model.activePage});
                 break;
-            case 'password':
+            case 'storyTextAreaInput':
+                this.props.model.activePage.text = nativeEvent.target.value;
+                this.setState({activePage: this.props.model.activePage});
                 break;
         }
     }
@@ -133,10 +135,16 @@ export default class Application extends React.Component < ApplicationProps, App
             if (this.props.model.activeBook) {
                 pageArray = this.props.model.activeBook.pageArray
             }
+            let pageType;
+            if (this.state.activePage.pageNumber == 0) {
+                pageType = <TitlePage bottomNavClickHandler={this.onBottomNavClick.bind(this)} changeHandler={this.handlePageInputChange.bind(this)} page={this.state.activePage}/>
+            } else {
+                pageType = <MainPage bottomNavClickHandler={this.onBottomNavClick.bind(this)} changeHandler={this.handlePageInputChange.bind(this)} page={this.state.activePage}/>
+            }
             layout = <div>
                 <TopNav  clickHandler={this.onTopNavClick.bind(this)} />
-                <SideNav pageArray={pageArray} clickHandler={this.onSideNavClick.bind(this)}/>
-                <TitlePage bottomNavClickHandler={this.onBottomNavClick.bind(this)} changeHandler={this.handlePageInputChange.bind(this)} page={this.props.model.activePage}/>
+                <SideNav pageArray={pageArray} clickHandler={this.onSideNavClick.bind(this)} activePage={this.state.activePage}/>
+                {pageType}
             </div>
         }
         return layout;

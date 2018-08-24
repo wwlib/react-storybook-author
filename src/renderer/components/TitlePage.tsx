@@ -22,7 +22,6 @@ export default class TitlePage extends React.Component<TitlePageProps, TitlePage
 
     handleInputChange(event: any) {
         this.props.changeHandler(event);
-        this.forceUpdate();
     }
 
     //onchange="angular.element(this).scope().uploadImage(this.files)"

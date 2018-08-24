@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
 import Page from '../model/Page';
 
-export interface PageThumbnailProps { page: Page, clickHandler: any }
+export interface PageThumbnailProps { page: Page, clickHandler: any, selected: boolean }
 export interface PageThumbnailState { }
 
 export default class PageThumbnail extends React.Component<PageThumbnailProps, PageThumbnailState> {
@@ -22,10 +22,18 @@ export default class PageThumbnail extends React.Component<PageThumbnailProps, P
     //onchange="angular.element(this).scope().uploadImage(this.files)"
     //onchange="angular.element(this).scope().saveAudioFile(this.files)"
 
+    getStyle(): any {
+        let style: any = { border: 'none'};
+        if (this.props.selected) {
+            style.border = 'solid';
+        }
+        return style;
+    }
+
     render() {
         return (
             <div className="preview" onClick={this.onButtonClicked.bind(this)}>
-                <div className="preview-white-background" style={{ border: 'none' }}>
+                <div className="preview-white-background" style={this.getStyle()}>
                     <div className="preview-image-container">
                         <img className="preview-thumbnail" src="assets/previewBlock.png" />
                     </div>
