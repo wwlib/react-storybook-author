@@ -192,7 +192,12 @@ export default class Model extends EventEmitter {
     }
 
     selectPage(page: Page): void {
-        this.activePage = page;
+        if (page) {
+            this.activePage = page;
+        } else {
+            console.log(`error: cannot select undefined page`)
+        }
+
     }
 
     //// AWS API

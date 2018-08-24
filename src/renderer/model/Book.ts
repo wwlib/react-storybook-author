@@ -107,7 +107,7 @@ export default class Book {
                 testPage.pageNumber--;
             }
         });
-        pageNumber = Math.min(pageArray.length, pageNumber);
+        pageNumber = Math.min(pageArray.length-1, pageNumber);
         return pageArray[pageNumber];
     }
 

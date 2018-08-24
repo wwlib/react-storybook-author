@@ -42,7 +42,8 @@ export default class Application extends React.Component < ApplicationProps, App
                 break;
             case 'deletePageButton':
                 this.props.model.deletePage();
-                this.setState({ pageArray: this.props.model.activeBook.pageArray});
+                this.props.model.selectPage(this.props.model.activePage);
+                this.setState({ pageArray: this.props.model.activeBook.pageArray, activePage: this.props.model.activePage});
                 break;
             case 'hideSceneObjectsButton':
                 break;
