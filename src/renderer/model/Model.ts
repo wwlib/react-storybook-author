@@ -49,8 +49,7 @@ export default class Model extends EventEmitter {
 
             }
             AudioManager.Instance({ userDataPath: this.userDataPath });
-            this.activeBook = new Book();
-            this.activeBookDataList = undefined;
+            this.newBook();
             this.emit('ready', this);
         });
 
@@ -168,6 +167,7 @@ export default class Model extends EventEmitter {
 
     newBook(options?: BookOptions): Book {
         this.activeBook = new Book(options);
+        this.addNewPage();
         this.activeBookDataList = undefined;
         return this.activeBook;
     }
@@ -185,7 +185,7 @@ export default class Model extends EventEmitter {
     deletePage(page?: Page): Page | undefined {
         page = page || this.activePage;
         let result: Page | undefined = undefined;
-        if (this.activeBook && page) {
+        if (this.activeBook && page && (page.pageNumber != 0)) {
             result = this.activePage = this.activeBook.deletePage(page);
         }
         return result;
@@ -303,6 +303,8 @@ export default class Model extends EventEmitter {
                     if (result.storybookRecord && result.storybookRecord.Data) {
                         let book:Book = new Book(result.storybookRecord.Data);
                         this.activeBook = book;
+                        this.activePage = this.activeBook.pageArray[this.activeBook.currentPageNumber];
+                        this.activeBookDataList = undefined;
                         resolve(book);
                     } else {
                         reject();

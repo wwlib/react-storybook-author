@@ -11,6 +11,7 @@ import TitlePage from './TitlePage';
 import PageThumbnail from './PageThumbnail';
 import CloudBookList from './CloudBookLIst';
 import { BookDataList } from '../model/BookManager';
+import Book from '../model/Book';
 
 export interface ApplicationProps { model: Model }
 export interface ApplicationState { pageArray: Page[], loggedIn: boolean, bookLoaded: boolean, bookDataList: BookDataList | undefined }
@@ -97,7 +98,8 @@ export default class Application extends React.Component < ApplicationProps, App
             this.setState({ loggedIn: true, bookLoaded: true });
         } else {
             this.props.model.retrieveBookFromCloudWithUUID(bookUUID, version)
-                .then(() => {
+                .then((book: Book) => {
+                    console.log(`Application: onCloudBookListClick: book: `, book, this.props.model.activePage);
                     this.setState({ loggedIn: true, bookLoaded: true });
                 })
                 .catch((err) => {
@@ -105,6 +107,19 @@ export default class Application extends React.Component < ApplicationProps, App
                 })
         }
     }
+
+    handlePageInputChange(event: any) {
+        let nativeEvent: any = event.nativeEvent;
+        console.log(`handlePageInputChange: `, nativeEvent.target.id)
+        switch(nativeEvent.target.id) {
+            case 'titleTextInput':
+                this.props.model.activePage.title = nativeEvent.target.value;
+                break;
+            case 'password':
+                break;
+        }
+    }
+
 
     layout(): any {
         let layout;
@@ -121,7 +136,7 @@ export default class Application extends React.Component < ApplicationProps, App
             layout = <div>
                 <TopNav  clickHandler={this.onTopNavClick.bind(this)} />
                 <SideNav pageArray={pageArray} clickHandler={this.onSideNavClick.bind(this)}/>
-                <TitlePage bottomNavClickHandler={this.onBottomNavClick.bind(this)}/>
+                <TitlePage bottomNavClickHandler={this.onBottomNavClick.bind(this)} changeHandler={this.handlePageInputChange.bind(this)} page={this.props.model.activePage}/>
             </div>
         }
         return layout;
