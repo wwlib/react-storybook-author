@@ -27,7 +27,7 @@ export type RecorderConfig = {
 export default class Recorder {
 
     // var WORKER_PATH = 'js/recorderjs/recorderWorker.js';
-    public WORKER_PATH: string = 'workers/recorderWorker.js';
+    public WORKER_PATH: string = 'dist/renderer/audio/RecorderWorker.js'; //'workers/recorderWorker.js';
     public context: AudioContext | undefined;
     public node: ScriptProcessorNode | undefined;
 

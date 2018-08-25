@@ -1,8 +1,9 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
 import BottomNav from './BottomNav';
+import Page from '../model/Page';
 
-export interface TitlePageProps { bottomNavClickHandler: any }
+export interface TitlePageProps { bottomNavClickHandler: any, changeHandler: any, page: Page }
 export interface TitlePageState { }
 
 export default class TitlePage extends React.Component<TitlePageProps, TitlePageState> {
@@ -19,30 +20,35 @@ export default class TitlePage extends React.Component<TitlePageProps, TitlePage
         this.props.bottomNavClickHandler(event);
     }
 
+    handleInputChange(event: any) {
+        this.props.changeHandler(event);
+    }
+
     //onchange="angular.element(this).scope().uploadImage(this.files)"
     //onchange="angular.element(this).scope().saveAudioFile(this.files)"
 
     render() {
         return (
-            <div _ngcontent-c0="" id="mainPage" ng-reflect-ng-style="[object Object]" style={{ width: "1097px", height: "500px" }}>
+            <div id="mainPage" style={{ width: "1097px", height: "500px" }}>
 
-                <div _ngcontent-c0="" id="mainPageTopTitle">
-                    <div _ngcontent-c0="" id="titlePageTopContainer">
-                        <div _ngcontent-c0="" id="titlePageImage">
-                            <button _ngcontent-c0="" className="imageUploadButton"></button>
+                <div id="mainPageTopTitle">
+                    <div id="titlePageTopContainer">
+                        <div id="titlePageImage">
+                            <button className="imageUploadButton"></button>
 
                         </div>
-                        <div _ngcontent-c0="" id="titlePageTargetWords">
-                            <button _ngcontent-c0="" id="addTargetWordButton">Add Target Word</button>
+                        <div id="titlePageTargetWords">
+                            <button id="addTargetWordButton">Add Target Word</button>
                         </div>
                     </div>
-                    <div _ngcontent-c0="" id="titlePageBottomContainer">
-                        <input value={''} _ngcontent-c0="" id="titleTextInput" ng-reflect-model="" placeholder="Enter a story title..." className="ng-untouched ng-pristine ng-valid" />
+                    <div id="titlePageBottomContainer">
+                        <input value={this.props.page.title} id="titleTextInput" placeholder="Enter a story title..." className="ng-untouched ng-pristine ng-valid"
+                            onChange={this.handleInputChange.bind(this)}/>
                     </div>
                 </div>
 
-                <div _ngcontent-c0="" id="mainPageBottom">
-                    <div _ngcontent-c0="" id="pageNumber"> Title Page </div>
+                <div id="mainPageBottom">
+                    <div id="pageNumber"> Title Page </div>
                 </div>
 
                 <BottomNav clickHandler={this.onBottomNavButtonClicked.bind(this)} />

@@ -13,6 +13,11 @@
 - https://blog.sessionstack.com/how-javascript-works-the-building-blocks-of-web-workers-5-cases-when-you-should-use-them-a547c0757f6a
 - https://github.com/Microsoft/TypeScript/blob/master/lib/lib.webworker.d.ts
 
+#### Electron/Browser Notes
+- AppSettings fs read/write
+- BookSet fs read/write
+- Worker: webKit: var url = (window.URL || window.webkitURL).createObjectURL(blob);
+- Worker: if(!this.context.createScriptProcessor){
 
 #### Misc
 - https://www.npmjs.com/package/concurrently

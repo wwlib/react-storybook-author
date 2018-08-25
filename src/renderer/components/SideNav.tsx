@@ -4,7 +4,7 @@ import Model from '../model/Model';
 import Page from '../model/Page';
 import PageThumbnail from './PageThumbnail';
 
-export interface SideNavProps { pageArray: Page[], clickHandler: any }
+export interface SideNavProps { pageArray: Page[], activePage: Page, clickHandler: any }
 export interface SideNavState { }; //pageArray: Page[] }
 
 export default class SideNav extends React.Component<SideNavProps, SideNavState> {
@@ -38,7 +38,8 @@ export default class SideNav extends React.Component<SideNavProps, SideNavState>
         let result: JSX.Element[] = [];
         if (this.props.pageArray) {
             this.props.pageArray.forEach((page: Page) => {
-                result.push(<PageThumbnail key={page.uuid} page={page} clickHandler={this.props.clickHandler}/>);
+                let selected: boolean = this.props.activePage == page;
+                result.push(<PageThumbnail key={page.uuid} page={page} clickHandler={this.props.clickHandler} selected={selected}/>);
             })
         }
         return result;

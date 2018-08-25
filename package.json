@@ -9,10 +9,10 @@
     "build": "tsc",
     "watch": "tsc -w",
     "lint": "tslint -c tslint.json -p tsconfig.json",
-    "start": "tsc -v && yarn build && electron ./dist/main/main.js",
-    "start-watch": "yarn build && concurrently \"yarn watch\" \"electron ./dist/main/main.js\" ",
-    "debug": "tsc -v && yarn build && electron ./dist/main/main.js --debug",
-    "restart": "electron ./dist/main/main.js",
+    "start": "tsc -v && yarn build && electron .",
+    "start-watch": "yarn build && concurrently \"yarn watch\" \"electron .\" ",
+    "debug": "tsc -v && yarn build && electron . --debug",
+    "restart": "electron .",
     "version": "./version.sh $npm_package_version",
     "test-version": "./version.sh $npm_package_version"
   },
@@ -48,11 +48,13 @@
     "typescript": "^2.9.2"
   },
   "dependencies": {
+    "amazon-cognito-identity-js": "^2.0.21",
     "blob-to-buffer": "^1.2.8",
     "electron": "^2.0.5",
     "electron-reload": "^1.2.5",
     "ensureDir": "^1.0.6",
     "jsonfile": "^4.0.0",
+    "node-fetch": "^2.2.0",
     "os": "^0.1.1",
     "osenv": "^0.1.5",
     "performance-now": "^2.1.0",
@@ -61,6 +63,7 @@
     "react-bootstrap": "^0.32.1",
     "react-dom": "^16.4.1",
     "react-easy-chart": "^1.0.0",
+    "react-password-mask": "^3.3.1",
     "uuid": "^3.3.2",
     "yargs": "^12.0.1"
   }

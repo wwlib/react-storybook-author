@@ -1,151 +1,162 @@
-export class RecorderWorker {
+/*License (MIT)
 
-    public onmessage: any;
-    public postMessage: any;
+Copyright Â© 2013 Matt Diamond
 
-    private _recLength:number = 0;
-    private _recBuffersL: any = [];
-    private _recBuffersR: any = [];
-    private _sampleRate: number;
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-    constructor() {
-        this.onmessage = (e: any) => {
-          switch(e.data.command) {
-            case 'init':
-              this.init(e.data.config);
-              break;
-            case 'record':
-              this.record(e.data.buffer);
-              break;
-            case 'exportWAV':
-              this.exportWAV(e.data.type);
-              break;
-            case 'exportMonoWAV':
-              this.exportMonoWAV(e.data.type);
-              break;
-            case 'getBuffers':
-              this.getBuffers();
-              break;
-            case 'clear':
-              this.clear();
-              break;
-          }
-        }
-    }
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+the Software.
 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+*/
 
-    private init(config){
-      this._sampleRate = config.sampleRate;
-    }
+let recLength: number = 0;
+let recBuffersL: any = [];
+let recBuffersR: any = [];
+let sampleRate: number;
 
-    private record(inputBuffer){
-      this._recBuffersL.push(inputBuffer[0]);
-      this._recBuffersR.push(inputBuffer[1]);
-      this._recLength += inputBuffer[0].length;
-    }
+this.onmessage = function(e){
+  switch(e.data.command){
+    case 'init':
+      init(e.data.config);
+      break;
+    case 'record':
+      record(e.data.buffer);
+      break;
+    case 'exportWAV':
+      exportWAV(e.data.type);
+      break;
+    case 'exportMonoWAV':
+      exportMonoWAV(e.data.type);
+      break;
+    case 'getBuffers':
+      getBuffers();
+      break;
+    case 'clear':
+      clear();
+      break;
+  }
+};
 
-    private exportWAV(type){
-      var bufferL = this.mergeBuffers(this._recBuffersL, this._recLength);
-      var bufferR = this.mergeBuffers(this._recBuffersR, this._recLength);
-      var interleaved = this.interleave(bufferL, bufferR);
-      var dataview = this.encodeWAV(interleaved);
-      var audioBlob = new Blob([dataview], { type: type });
+function init(config){
+  sampleRate = config.sampleRate;
+}
 
-      this.postMessage(audioBlob);
-    }
+function record(inputBuffer: any[]){
+  recBuffersL.push(inputBuffer[0]);
+  recBuffersR.push(inputBuffer[1]);
+  recLength += inputBuffer[0].length;
+}
 
-    private exportMonoWAV(type){
-      var bufferL = this.mergeBuffers(this._recBuffersL, this._recLength);
-      var dataview = this.encodeWAV(bufferL, true);
-      var audioBlob = new Blob([dataview], { type: type });
+function exportWAV(type){
+    console.log(`worker: exportWAV: type: ${type}`);
+  var bufferL = mergeBuffers(recBuffersL, recLength);
+  var bufferR = mergeBuffers(recBuffersR, recLength);
+  var interleaved = interleave(bufferL, bufferR);
+  var dataview = encodeWAV(interleaved);
+  var audioBlob = new Blob([dataview], { type: type });
 
-      this.postMessage(audioBlob);
-    }
+  this.postMessage(audioBlob);
+}
 
-    private getBuffers() {
-      var buffers: Float32Array[] = [];
-      buffers.push( this.mergeBuffers(this._recBuffersL, this._recLength) );
-      buffers.push( this.mergeBuffers(this._recBuffersR, this._recLength) );
-      this.postMessage(buffers);
-    }
+function exportMonoWAV(type){
+  var bufferL = mergeBuffers(recBuffersL, recLength);
+  var dataview = encodeWAV(bufferL, true);
+  var audioBlob = new Blob([dataview], { type: type });
 
-    private clear(){
-      this._recLength = 0;
-      this._recBuffersL = [];
-      this._recBuffersR = [];
-    }
+  this.postMessage(audioBlob);
+}
 
-    private mergeBuffers(recBuffers, recLength){
-      var result = new Float32Array(recLength);
-      var offset = 0;
-      for (var i = 0; i < recBuffers.length; i++){
-        result.set(recBuffers[i], offset);
-        offset += recBuffers[i].length;
-      }
-      return result;
-    }
+function getBuffers() {
+  var buffers:Float32Array[] = [];
+  buffers.push( mergeBuffers(recBuffersL, recLength) );
+  buffers.push( mergeBuffers(recBuffersR, recLength) );
+  this.postMessage(buffers);
+}
 
-    private interleave(inputL, inputR){
-      var length = inputL.length + inputR.length;
-      var result = new Float32Array(length);
+function clear(){
+  recLength = 0;
+  recBuffersL = [];
+  recBuffersR = [];
+}
 
-      var index = 0,
-        inputIndex = 0;
+function mergeBuffers(recBuffers, recLength){
+  var result = new Float32Array(recLength);
+  var offset = 0;
+  for (var i = 0; i < recBuffers.length; i++){
+    result.set(recBuffers[i], offset);
+    offset += recBuffers[i].length;
+  }
+  return result;
+}
 
-      while (index < length){
-        result[index++] = inputL[inputIndex];
-        result[index++] = inputR[inputIndex];
-        inputIndex++;
-      }
-      return result;
-    }
+function interleave(inputL, inputR){
+  var length = inputL.length + inputR.length;
+  var result = new Float32Array(length);
 
-    private floatTo16BitPCM(output, offset, input){
-      for (var i = 0; i < input.length; i++, offset+=2){
-        var s = Math.max(-1, Math.min(1, input[i]));
-        output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-      }
-    }
+  var index = 0,
+    inputIndex = 0;
 
-    private writeString(view, offset, string){
-      for (var i = 0; i < string.length; i++){
-        view.setUint8(offset + i, string.charCodeAt(i));
-      }
-    }
+  while (index < length){
+    result[index++] = inputL[inputIndex];
+    result[index++] = inputR[inputIndex];
+    inputIndex++;
+  }
+  return result;
+}
 
-    private encodeWAV(samples: Float32Array, mono: boolean = false){
-      var buffer = new ArrayBuffer(44 + samples.length * 2);
-      var view = new DataView(buffer);
+function floatTo16BitPCM(output, offset, input){
+  for (var i = 0; i < input.length; i++, offset+=2){
+    var s = Math.max(-1, Math.min(1, input[i]));
+    output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+}
 
-      /* RIFF identifier */
-      this.writeString(view, 0, 'RIFF');
-      /* file length */
-      view.setUint32(4, 32 + samples.length * 2, true);
-      /* RIFF type */
-      this.writeString(view, 8, 'WAVE');
-      /* format chunk identifier */
-      this.writeString(view, 12, 'fmt ');
-      /* format chunk length */
-      view.setUint32(16, 16, true);
-      /* sample format (raw) */
-      view.setUint16(20, 1, true);
-      /* channel count */
-      view.setUint16(22, mono?1:2, true);
-      /* sample rate */
-      view.setUint32(24, this._sampleRate, true);
-      /* byte rate (sample rate * block align) */
-      view.setUint32(28, this._sampleRate * 4, true);
-      /* block align (channel count * bytes per sample) */
-      view.setUint16(32, 4, true);
-      /* bits per sample */
-      view.setUint16(34, 16, true);
-      /* data chunk identifier */
-      this.writeString(view, 36, 'data');
-      /* data chunk length */
-      view.setUint32(40, samples.length * 2, true);
+function writeString(view, offset, string){
+  for (var i = 0; i < string.length; i++){
+    view.setUint8(offset + i, string.charCodeAt(i));
+  }
+}
 
-      this.floatTo16BitPCM(view, 44, samples);
+function encodeWAV(samples: Float32Array, mono: boolean = false){
+  var buffer = new ArrayBuffer(44 + samples.length * 2);
+  var view = new DataView(buffer);
 
-      return view;
-    }
+  /* RIFF identifier */
+  writeString(view, 0, 'RIFF');
+  /* file length */
+  view.setUint32(4, 32 + samples.length * 2, true);
+  /* RIFF type */
+  writeString(view, 8, 'WAVE');
+  /* format chunk identifier */
+  writeString(view, 12, 'fmt ');
+  /* format chunk length */
+  view.setUint32(16, 16, true);
+  /* sample format (raw) */
+  view.setUint16(20, 1, true);
+  /* channel count */
+  view.setUint16(22, mono?1:2, true);
+  /* sample rate */
+  view.setUint32(24, sampleRate, true);
+  /* byte rate (sample rate * block align) */
+  view.setUint32(28, sampleRate * 4, true);
+  /* block align (channel count * bytes per sample) */
+  view.setUint16(32, 4, true);
+  /* bits per sample */
+  view.setUint16(34, 16, true);
+  /* data chunk identifier */
+  writeString(view, 36, 'data');
+  /* data chunk length */
+  view.setUint32(40, samples.length * 2, true);
+
+  floatTo16BitPCM(view, 44, samples);
+
+  return view;
 }

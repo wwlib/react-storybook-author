@@ -67,12 +67,11 @@ export default class Page {
         json.uuid = this.uuid;
         json.title = this.title;
         json.pageNumber = this.pageNumber;
-        json.image = this.image;
-        json.text = this.text;
-        json.audio = this.audio;
-        json.prompts = this.prompts;
-        json.css = this.css;
-        json.sceneObjects = [];
+        if (this.image) json.image = this.image;
+        if (this.text) json.text = this.text;
+        if (this.audio) json.audio = this.audio;
+        if (this.prompts && this.prompts.length > 0) json.prompts = this.prompts;
+        if (this.css) json.css = this.css;
         //TODO
         // this.sceneObjects.forEach((sceneObject: SceneObject) => {
         //     json.sceneObjects.push(sceneObject.toJSON());
