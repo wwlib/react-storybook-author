@@ -13,6 +13,8 @@ import CloudBookList from './CloudBookLIst';
 import { BookDataList } from '../model/BookManager';
 import Book from '../model/Book';
 
+const Jimp = require('jimp');
+
 export interface ApplicationProps { model: Model }
 export interface ApplicationState { pageArray: Page[], loggedIn: boolean, bookLoaded: boolean, bookDataList: BookDataList | undefined, activePage: Page }
 
@@ -123,6 +125,27 @@ export default class Application extends React.Component < ApplicationProps, App
         }
     }
 
+    handlePageImageLoad(imageBase64: string, file: any): void {
+        // let imageBuffer = new Buffer(imageURL, 'base64');
+        console.log(file);
+        Jimp.read(file.path)
+            .then(image => {
+                console.log(image);
+                let newImage: any = image.cover(75, 75)
+                    .quality(60)
+                    .getBase64Async(Jimp.MIME_JPEG)
+                        .then((base64data: string) => {
+                            this.props.model.activePage.image = base64data;
+                            this.setState({activePage: this.props.model.activePage});
+                        })
+                // let base64data: string = new Buffer(newImage.buffer).toString('base64');
+                // this.props.model.activePage.image = base64data;
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    }
+
 
     layout(): any {
         let layout;
@@ -140,7 +163,7 @@ export default class Application extends React.Component < ApplicationProps, App
             if (this.state.activePage.pageNumber == 0) {
                 pageType = <TitlePage bottomNavClickHandler={this.onBottomNavClick.bind(this)} changeHandler={this.handlePageInputChange.bind(this)} page={this.state.activePage}/>
             } else {
-                pageType = <MainPage bottomNavClickHandler={this.onBottomNavClick.bind(this)} changeHandler={this.handlePageInputChange.bind(this)} page={this.state.activePage}/>
+                pageType = <MainPage bottomNavClickHandler={this.onBottomNavClick.bind(this)} changeHandler={this.handlePageInputChange.bind(this)} imageHandler={this.handlePageImageLoad.bind(this)} page={this.state.activePage}/>
             }
             layout = <div>
                 <TopNav  clickHandler={this.onTopNavClick.bind(this)} />

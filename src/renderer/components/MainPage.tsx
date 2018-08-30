@@ -5,14 +5,14 @@ import Page from '../model/Page';
 
 import FileDrop from './FileDrop';
 
-export interface MainPageProps { bottomNavClickHandler: any, changeHandler: any, page: Page }
-export interface MainPageState { }
+export interface MainPageProps { bottomNavClickHandler: any, changeHandler: any, imageHandler: any, page: Page }
+export interface MainPageState {}
 
 export default class MainPage extends React.Component<MainPageProps, MainPageState> {
 
 
     componentWillMount() {
-        this.setState({});
+        this.setState({imageURL: ''});
     }
 
     componentDidMount() {
@@ -24,6 +24,17 @@ export default class MainPage extends React.Component<MainPageProps, MainPageSta
 
     handleInputChange(event: any) {
         this.props.changeHandler(event);
+    }
+
+    processUploadedFile(file: any): void {
+        console.log('processUploadedFile ' + file.name);
+        this.props.imageHandler('', file);
+        // var reader = new FileReader();
+        // reader.onload = ((e: any) => {
+        //     console.log(`FilReader result: OK`);
+        //     this.props.imageHandler(e.target.result);
+        // })
+        // reader.readAsDataURL(file);
     }
 
     onDrop(fileList: any, ev: any) {
@@ -42,13 +53,16 @@ export default class MainPage extends React.Component<MainPageProps, MainPageSta
         if (ev.dataTransfer.items) {
             console.log(`using items`);
           // Use DataTransferItemList interface to access the file(s)
-          for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+          // for (var i = 0; i < ev.dataTransfer.items.length; i++) {
             // If dropped items aren't files, reject them
+            var i = 0;
             if (ev.dataTransfer.items[i].kind === 'file') {
               var file = ev.dataTransfer.items[i].getAsFile();
               console.log('... file[' + i + '].name = ' + file.name, file);
+
+             this.processUploadedFile(file);
             }
-          }
+          // }
         } else {
             console.log(`using files`);
           // Use DataTransfer interface to access the file(s)
@@ -60,6 +74,12 @@ export default class MainPage extends React.Component<MainPageProps, MainPageSta
         // Pass event to removeDragData for cleanup
         this.removeDragData(ev)
 
+    }
+
+    onFileInputChange(event: any): void {
+        var files = event.target.files
+        console.log(`onFileInputChange: `, files);
+        this.processUploadedFile(files[0]);
     }
 
     removeDragData(ev) {
@@ -92,11 +112,6 @@ export default class MainPage extends React.Component<MainPageProps, MainPageSta
         }
     }
 
-    onFileInputChange(event: any): void {
-        var files = event.target.files
-        console.log(`onFileInputChange: `, files);
-    }
-
     render() {
         return (
             <div id="mainPage" style={{ width: "1097px", height: "500px" }}>
@@ -104,6 +119,7 @@ export default class MainPage extends React.Component<MainPageProps, MainPageSta
                 <div id="mainPageTopStory">
                     <FileDrop className={"fileDrop"} targetClassName={"fileDropTarget"} onDrop={this.onDrop.bind(this)} onDragOver={this.onDragOver.bind(this)}>
                         <div id="imageContainer" style={{width: 500}}>
+                            <img className="thumbnail" src={this.props.page.image} />
                             <button className="imageUploadButton" onClick={this.onUploadButtonClick.bind(this)}></button>
                             <input type="file" id="fileInput" name="file" accept="image/png, image/jpeg" multiple style={{ display: 'none' }} onChange={this.onFileInputChange.bind(this)}/>
                         </div>

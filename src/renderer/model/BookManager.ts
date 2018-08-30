@@ -246,10 +246,10 @@ export default class BookManager {
             let headers: any = {
                 Authorization: authToken
             }
-            console.log(book.toJSON());
-            console.log(JSON.stringify(book.toJSON(), null, 2));
+            // console.log(book.toJSON());
+            // console.log(JSON.stringify(book.toJSON(), null, 2));
             let body: any = JSON.stringify({ storybookId: book.uuid, data: book.toJSON() });
-            console.log(body);
+            // console.log(body);
             fetch(path, { method: 'POST', body: body, headers: headers })
                 .then(res => resolve(res));
                 // .then(res => res.json())
@@ -274,7 +274,7 @@ export default class BookManager {
                 Authorization: authToken
             }
             let body: any = JSON.stringify({ storybookId: uuid, version: version });
-            console.log(body);
+            // console.log(body);
             fetch(path, { method: 'POST', body: body, headers: headers })
                 // .then((res: any) => console.log(res))
                 .then((res: any) => res.json())
@@ -298,7 +298,7 @@ export default class BookManager {
                 Authorization: authToken
             }
             let body: any = JSON.stringify({ author:author });
-            console.log(body);
+            // console.log(body);
             fetch(path, { method: 'POST', body: body, headers: headers })
                 // .then((res: any) => console.log(res))
                 .then((res: any) => res.json())

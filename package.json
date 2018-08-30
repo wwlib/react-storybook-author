@@ -52,6 +52,7 @@
     "electron": "^2.0.5",
     "electron-reload": "^1.2.5",
     "ensureDir": "^1.0.6",
+    "jimp": "^0.3.11",
     "jsonfile": "^4.0.0",
     "node-fetch": "^2.2.0",
     "os": "^0.1.1",
