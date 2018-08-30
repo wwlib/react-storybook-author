@@ -2,7 +2,8 @@ import { app, BrowserWindow } from "electron";
 import * as path from "path";
 
 // enables hot reloading during development
-require('electron-reload')(path.join(__dirname, "../../src"), {
+// https://github.com/yan-foto/electron-reload/issues/33
+require('electron-reload')(path.join(__dirname, "../../dist"), {
   electron: require('${__dirname}/../../node_modules/electron')
 });
 

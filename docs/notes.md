@@ -7,6 +7,8 @@
 - https://www.javascriptstuff.com/component-communication/#4-event-bubbling
 - https://medium.com/@justintulk/react-anti-patterns-props-in-initial-state-28687846cc2e
 - https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html
+- react-file-drop
+  - https://github.com/ant-design/ant-design/issues/4892
 
 #### Workers
 - https://www.npmjs.com/package/typed-web-workers
@@ -18,6 +20,11 @@
 - BookSet fs read/write
 - Worker: webKit: var url = (window.URL || window.webkitURL).createObjectURL(blob);
 - Worker: if(!this.context.createScriptProcessor){
+
+#### Drop Files
+- https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/File_drag_and_drop
+- https://github.com/sarink/react-file-drop/blob/master/src/FileDrop/FileDrop.tsx
+- https://www.html5rocks.com/en/tutorials/file/dndfiles/
 
 #### Misc
 - https://www.npmjs.com/package/concurrently
