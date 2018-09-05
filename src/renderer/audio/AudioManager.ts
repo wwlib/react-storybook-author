@@ -84,7 +84,7 @@ export default class AudioManager {
         this.isRecording = false;
         console.log("duration: ", durationSeconds);
         console.log(`exporting...`);
-        this.audioRecorder.exportWAV((blob: Blob) => {
+        this.audioRecorder.exportMono16kWAV((blob: Blob) => { // this.audioRecorder.exportWAV((blob: Blob) => {
             if (this.userDataPath) {
                 this.saveUserAudioBlob(blob, this.userDataPath, this.generateFilepath())
                     .then((filename: string) => {

@@ -113,12 +113,14 @@ export default class MainPage extends React.Component<MainPageProps, MainPageSta
     }
 
     render() {
+        let imageContainerStyle: any = {width: 500, background:`url(${this.props.page.image}) no-repeat`, backgroundSize: '100%'};
+
         return (
             <div id="mainPage" style={{ width: "1097px", height: "500px" }}>
 
                 <div id="mainPageTopStory">
                     <FileDrop className={"fileDrop"} targetClassName={"fileDropTarget"} onDrop={this.onDrop.bind(this)} onDragOver={this.onDragOver.bind(this)}>
-                        <div id="imageContainer" style={{width: 500}}>
+                        <div id="imageContainer" style={imageContainerStyle}>
                             <img className="thumbnail" src={this.props.page.image} />
                             <button className="imageUploadButton" onClick={this.onUploadButtonClick.bind(this)}></button>
                             <input type="file" id="fileInput" name="file" accept="image/png, image/jpeg" multiple style={{ display: 'none' }} onChange={this.onFileInputChange.bind(this)}/>

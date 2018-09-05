@@ -131,7 +131,7 @@ export default class Application extends React.Component < ApplicationProps, App
         Jimp.read(file.path)
             .then(image => {
                 console.log(image);
-                let newImage: any = image.cover(75, 75)
+                let newImage: any = image.cover(500, 500)
                     .quality(60)
                     .getBase64Async(Jimp.MIME_JPEG)
                         .then((base64data: string) => {

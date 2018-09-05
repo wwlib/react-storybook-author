@@ -128,13 +128,25 @@ export default class Recorder {
         }
     }
 
-    exportMonoWAV(cb: any, type: string) {
+    exportMonoWAV(cb: any, type?: string) {
         this.currCallback = cb || this.config.callback;
         type = type || this.config.type || 'audio/wav';
         if (!this.currCallback) throw new Error('Callback not set');
         if (this.worker) {
             this.worker.postMessage({
                 command: 'exportMonoWAV',
+                type: type
+            });
+        }
+    }
+
+    exportMono16kWAV(cb: any, type?: string) {
+        this.currCallback = cb || this.config.callback;
+        type = type || this.config.type || 'audio/wav';
+        if (!this.currCallback) throw new Error('Callback not set');
+        if (this.worker) {
+            this.worker.postMessage({
+                command: 'exportMono16kWAV',
                 type: type
             });
         }

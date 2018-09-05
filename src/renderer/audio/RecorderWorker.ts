@@ -20,7 +20,7 @@ DEALINGS IN THE SOFTWARE.
 let recLength: number = 0;
 let recBuffersL: any = [];
 let recBuffersR: any = [];
-let sampleRate: number;
+let recSampleRate: number;
 
 this.onmessage = function(e){
   switch(e.data.command){
@@ -36,6 +36,9 @@ this.onmessage = function(e){
     case 'exportMonoWAV':
       exportMonoWAV(e.data.type);
       break;
+    case 'exportMono16kWAV':
+      exportMono16kWAV(e.data.type);
+      break;
     case 'getBuffers':
       getBuffers();
       break;
@@ -46,7 +49,7 @@ this.onmessage = function(e){
 };
 
 function init(config){
-  sampleRate = config.sampleRate;
+  recSampleRate = config.sampleRate;
 }
 
 function record(inputBuffer: any[]){
@@ -60,18 +63,52 @@ function exportWAV(type){
   var bufferL = mergeBuffers(recBuffersL, recLength);
   var bufferR = mergeBuffers(recBuffersR, recLength);
   var interleaved = interleave(bufferL, bufferR);
-  var dataview = encodeWAV(interleaved);
-  var audioBlob = new Blob([dataview], { type: type });
+  var encodedWav = encodeWAV(interleaved);
+  var audioBlob = new Blob([encodedWav], { type: type });
 
   this.postMessage(audioBlob);
 }
 
 function exportMonoWAV(type){
   var bufferL = mergeBuffers(recBuffersL, recLength);
-  var dataview = encodeWAV(bufferL, true);
-  var audioBlob = new Blob([dataview], { type: type });
+  var encodedWav = encodeWAV(bufferL, true);
+  var audioBlob = new Blob([encodedWav], { type: type });
 
   this.postMessage(audioBlob);
+}
+
+function exportMono16kWAV(type){
+  var bufferL = mergeBuffers(recBuffersL, recLength);
+  var downsampleRate: number = 16000;
+  var downsampledBuffer = downsampleBuffer(bufferL, downsampleRate);
+  var encodedWav = encodeWAV(downsampledBuffer, true, downsampleRate);
+  var audioBlob = new Blob([encodedWav], { type: type });
+
+  this.postMessage(audioBlob);
+}
+
+function downsampleBuffer(buffer, exportSampleRate) {
+  if (exportSampleRate === recSampleRate) {
+    return buffer;
+  }
+  var sampleRateRatio = recSampleRate / exportSampleRate;
+  var newLength = Math.round(buffer.length / sampleRateRatio);
+  var result = new Float32Array(newLength);
+  var offsetResult = 0;
+  var offsetBuffer = 0;
+  while (offsetResult < result.length) {
+    var nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+    var accum = 0,
+      count = 0;
+    for (var i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
+      accum += buffer[i];
+      count++;
+    }
+    result[offsetResult] = accum / count;
+    offsetResult++;
+    offsetBuffer = nextOffsetBuffer;
+  }
+  return result;
 }
 
 function getBuffers() {
@@ -125,7 +162,8 @@ function writeString(view, offset, string){
   }
 }
 
-function encodeWAV(samples: Float32Array, mono: boolean = false){
+function encodeWAV(samples: Float32Array, mono: boolean = false, sampleRate?: number) {
+  sampleRate = sampleRate || recSampleRate;
   var buffer = new ArrayBuffer(44 + samples.length * 2);
   var view = new DataView(buffer);
 
