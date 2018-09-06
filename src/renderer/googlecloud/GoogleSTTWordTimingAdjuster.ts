@@ -26,6 +26,25 @@ in the util.js file in this directory.
 
 */
 
+// algorithm: go through the googleWords and either keep, insert, or delete words that match the actual words
+//
+// Scenario 1: transctiption is missing a word
+// actual: once upon a story time
+// transcript: once upon a time
+// googleWords: [once, upon, a, time]
+// ops: [keep, keep, keep, insert, keep]
+// so...: add 'story' to the list of timestamped words (result), update googleWords timings
+// transformed: [once, upon, a, story, time]
+
+// Scenario 2: transctiption has an extra word
+// actual: once a time
+// transcript: once upon a time
+// googleWords: [once, upon, a, time]
+// ops: [keep, delete, keep, keep]
+// so...: delete/omit 'upon' from results, update googleWords timings
+// transformed: [once, a, time]
+
+
 // import DoubleMetaphone from 'double-metaphone';
 const DoubleMetaphone = require("double-metaphone");
 
@@ -43,6 +62,25 @@ const HOMONYMS = {
     8: "ate",
 };
 
+export type GoogleWord = {
+    startTime: {
+      seconds: string | number,
+      nanos: number
+    };
+    endTime: {
+      seconds: string | number,
+      nanos: number
+    };
+    word: string;
+}
+
+export type TimestampedWord = {
+    index: number;
+    word: string;
+    start: number;
+    end: number;
+}
+
 /*
 Enum for the transform operations in min edit distance algorithm.
 */
@@ -57,7 +95,7 @@ export default class GoogleSpeechWordTimingAdjuster {
 
     public googleWords: any[];
     public actualText: string;
-    public formattedGoogleWords: any[];
+    public formattedGoogleWords: TimestampedWord[];
     public actualWords: string[];
     public ops: any[];
     public transformResult: any = {};
@@ -71,16 +109,23 @@ export default class GoogleSpeechWordTimingAdjuster {
 
         this.ops = this.runMinEditDistance(this.formattedGoogleWords, this.actualWords);
         this.transformResult = this.transform(this.formattedGoogleWords, this.actualWords, this.ops);
-        this.alignedWords = this.align(this.formattedGoogleWords, this.actualWords);
+        this.alignedWords = this.transformResult; // this.align(this.formattedGoogleWords, this.actualWords);
     }
 
-    reformatGoogleWords(googleWords) {
-        var reformatted: any[] = [];
+    reformatGoogleWords(googleWords: GoogleWord[]): TimestampedWord[] {
+        var reformatted: TimestampedWord[] = [];
         for (var i = 0; i < googleWords.length; i++) {
-            let wordInfo = googleWords[i];
-            let start = this.getSeconds(wordInfo.startTime);
-            let end = this.getSeconds(wordInfo.endTime);
-            reformatted.push([wordInfo.word, start, end]);
+            let wordInfo: GoogleWord = googleWords[i];
+            // let start = this.getSeconds(wordInfo.startTime);
+            // let end = this.getSeconds(wordInfo.endTime);
+            let timestampedWord:TimestampedWord = {
+                index: i,
+                word: wordInfo.word,
+                start: this.getSeconds(wordInfo.startTime),
+                end: this.getSeconds(wordInfo.endTime)
+            }
+            // reformatted.push([wordInfo.word, start, end]);
+            reformatted.push(timestampedWord);
         }
         return reformatted;
     }
@@ -121,7 +166,7 @@ export default class GoogleSpeechWordTimingAdjuster {
         return score;
     }
 
-    public runMinEditDistance(google_words: string[], real_words: string[]): any {
+    public runMinEditDistance(google_words: TimestampedWord[], real_words: string[]): any {
         /*
         Runs a minimum edit distance DP algorithm to transform google_words into
         real_words.
@@ -197,7 +242,7 @@ export default class GoogleSpeechWordTimingAdjuster {
                 }
                 // Correct for off by one by using i-1, j-1 as indexes to get words,
                 // since the table starts with an extra space.
-                let google_word = google_words[i - 1][0];
+                let google_word = google_words[i - 1].word;
                 let real_word = real_words[j - 1];
                 // console.log(`google_word: `, google_word);
                 // console.log(`real_word: `, real_word);
@@ -246,7 +291,7 @@ export default class GoogleSpeechWordTimingAdjuster {
         return ops2
     }
 
-    public transform(google_words: any[], real_words: string[], transform_ops: number[]): any {
+    public transform(google_words: TimestampedWord[], real_words: string[], transform_ops: number[]): any {
         // Given the google transcript and series of operations to perform, transforms
         // the google transcript, with timestamps either copied directly from Google's
         // annotations, or interpolated between consecutive words.
@@ -254,14 +299,14 @@ export default class GoogleSpeechWordTimingAdjuster {
         // Returns an array of tuples (word_idx, start_time, end_time), where start_time
         // and end_time are floats in seconds.
 
-        let result: any[] = [];
+        let result: TimestampedWord[] = [];
         let word_result: string[] = [];
         let next_google_idx = 0;
         let next_result_idx = 0;
         let should_trim_audio = false;
 
 
-        transform_ops.some((op: number): boolean => {
+        transform_ops.some((op: number, opIndex: number): boolean => {
             if (result.length >= real_words.length) {
                 // Reaching here likely means there are extra DELETE operations
                 // at the end, which means we need to trim the audio.
@@ -269,11 +314,17 @@ export default class GoogleSpeechWordTimingAdjuster {
                 return true;
             } else {
                 if (op == Op.KEEP) {
-                    let start, end;
-                    start = google_words[next_google_idx][1];
-                    end = google_words[next_google_idx][2];
-                    result.push([next_result_idx, start, end]);
-                    word_result.push(google_words[next_google_idx][0]);
+                    // let start, end;
+                    // start = google_words[next_google_idx].start;
+                    // end = google_words[next_google_idx].end;
+                    let timestampedWord:TimestampedWord = {
+                        index: next_result_idx,
+                        word: google_words[next_google_idx].word,
+                        start: google_words[next_google_idx].start,
+                        end:  google_words[next_google_idx].end
+                    }
+                    result.push(timestampedWord);
+                    word_result.push(google_words[next_google_idx].word);
                     next_google_idx += 1
                     next_result_idx += 1
                 } else if (op == Op.DELETE) {
@@ -284,9 +335,15 @@ export default class GoogleSpeechWordTimingAdjuster {
                     } else {
                         if (next_result_idx == 0) {
                             // At the beginning, give all time to next google word.
-                            let deleted_start = google_words[next_google_idx][1];
+                            let deleted_start = google_words[next_google_idx].start;
                             let next_next_word = google_words[next_google_idx + 1];
-                            google_words[next_google_idx + 1] = [next_next_word[0], deleted_start, next_next_word[2]];
+                            let timestampedWord:TimestampedWord = {
+                                index: next_google_idx + 1,
+                                word: next_next_word.word,
+                                start: deleted_start,
+                                end:  next_next_word.end
+                            }
+                            google_words[next_google_idx + 1] = timestampedWord;
                         } else if (next_google_idx >= google_words.length) {
                             // No more words to skip. Shouldn't get here.
                             throw new Error("something is wrong");
@@ -294,11 +351,25 @@ export default class GoogleSpeechWordTimingAdjuster {
                             // In the middle, split evenly.
                             let prev_result_word = result[result.length - 1];
                             let next_next_word = google_words[next_google_idx + 1];
-                            let deleted_start = google_words[next_google_idx][1];
-                            let deleted_end = google_words[next_google_idx][2];
+                            let deleted_start = google_words[next_google_idx].start;
+                            let deleted_end = google_words[next_google_idx].end;
                             let middle = deleted_start + .5 * (deleted_end - deleted_start);
-                            result[result.length - 1] = [prev_result_word[0], prev_result_word[1], middle];
-                            google_words[next_google_idx + 1] = [next_next_word[0], middle, next_next_word[2]];
+                            // let timestampedWord:TimestampedWord = {
+                            //     index: next_google_idx,
+                            //     word: prev_result_word.word,
+                            //     start: prev_result_word.start,
+                            //     end:  middle
+                            // }
+                            // result[result.length - 1] = timestampedWord;
+                            prev_result_word.end = middle;
+                            // let timestampedWord = {
+                            //     index: next_google_idx + 1,
+                            //     word: next_next_word.word,
+                            //     start: middle,
+                            //     end:  next_next_word.end
+                            // }
+                            // google_words[next_google_idx + 1] = timestampedWord;
+                            next_next_word.start = middle;
                         }
                     }
                     word_result.push("DELETED")
@@ -312,10 +383,16 @@ export default class GoogleSpeechWordTimingAdjuster {
                     if (next_result_idx == 0) {
                         // We're at the beginning.
                         // Take the first NEXT_INTERPOLATION fraction of the 0th google word.
-                        let google_word = google_words[0]
-                        let diff = (google_word[2] - google_word[1]) * NEXT_INTERPOLATION
+                        let google_word = google_words[0];
+                        let diff = (google_word.end - google_word.start) * NEXT_INTERPOLATION;
                         // Replace the timestamps at the 0th google word.
-                        google_words[0] = [google_word[0], diff, google_word[2]];
+                        let timestampedWord:TimestampedWord = {
+                            index: 0,
+                            word: google_word.word,
+                            start: diff,
+                            end:  google_word.end
+                        }
+                        google_words[0] = timestampedWord;
                         start = 0.0;
                         end = diff;
                     } else if (next_google_idx >= google_words.length) {
@@ -323,12 +400,18 @@ export default class GoogleSpeechWordTimingAdjuster {
                         // Take the last PREV_INTERPOLATION fraction of the last result we have.
                         let prev_result_word = result[result.length - 1];
                         // print prev_result_word
-                        let diff = (prev_result_word[2] - prev_result_word[1]) * END_PREV_INTERPOLATION;
+                        let diff = (prev_result_word.end - prev_result_word.start) * END_PREV_INTERPOLATION;
                         // Replace the timestamps of our last previous result.
-                        let new_prev_end = prev_result_word[2] - diff;
-                        result[result.length - 1] = [prev_result_word[0], prev_result_word[1], new_prev_end];
+                        let new_prev_end = prev_result_word.end - diff;
+                        let timestampedWord:TimestampedWord = {
+                            index: result.length - 1,
+                            word: prev_result_word.word,
+                            start: prev_result_word.start,
+                            end:  new_prev_end
+                        }
+                        result[result.length - 1] = timestampedWord;
                         start = new_prev_end;
-                        end = prev_result_word[2];
+                        end = prev_result_word.end;
                         // print start, end
                     } else {
                         // We're in the middle, we have results already, and there are more
@@ -337,81 +420,102 @@ export default class GoogleSpeechWordTimingAdjuster {
                         let next_google_word = google_words[next_google_idx];
                         // Replace the timestamps of prev_result_word and next_google_word.
                         // Steal some fraction of the times from the prev and next word.
-                        let prev_third = (prev_result_word[2] - prev_result_word[1]) * PREV_INTERPOLATION;
-                        let next_third = (next_google_word[2] - next_google_word[1]) * NEXT_INTERPOLATION;
+                        let prev_third = (prev_result_word.end - prev_result_word.start) * PREV_INTERPOLATION;
+                        let next_third = (next_google_word.end - next_google_word.start) * NEXT_INTERPOLATION;
                         if (prev_third <= 0) {
-                            // print prev_result_word[2], prev_result_word[1]
+                            // print prev_result_word.end, prev_result_word.start
                             // pass
                         }
                         if (next_third <= 0) {
-                            // print next_google_word[2], next_google_word[1]
+                            // print next_google_word.end, next_google_word.start
                             // pass
                         }
                         //TODO assert prev_third > 0 and next_third > 0
                         if (prev_third > 0 && next_third > 0) {
-                            start = prev_result_word[2] - prev_third;
-                            end = next_google_word[1] + next_third;
-                            result[result.length - 1] = [prev_result_word[0], prev_result_word[1], start];
-                            google_words[next_google_idx] = [next_google_word[0], end, next_google_word[2]]
+                            start = prev_result_word.end - prev_third;
+                            end = next_google_word.start + next_third;
+                            let timestampedWord:TimestampedWord = {
+                                index: result.length - 1,
+                                word: prev_result_word.word,
+                                start: prev_result_word.start,
+                                end:  start
+                            }
+                            result[result.length - 1] = timestampedWord;
+                            timestampedWord = {
+                                index: next_google_idx,
+                                word: next_google_word.word,
+                                start: end,
+                                end: next_google_word.end
+                            }
+                            google_words[next_google_idx] = timestampedWord
                         } else {
                             throw new Error('prev_third and next_third must be > 0');
                         }
                     }
-                    result.push([next_result_idx, start, end]);
+                    let timestampedWord:TimestampedWord = {
+                        index: next_result_idx,
+                        word: real_words[opIndex],
+                        start: start,
+                        end:  end
+                    }
+                    result.push(timestampedWord);
                     next_result_idx += 1;
                     word_result.push("INSERT");
                 } else {
                     throw new Error("Unknown operation");
                 }
+                // console.log(`google_words: `, google_words);
+                // console.log(`result: `, result);
+                // console.log(`word_result: `, word_result);
                 return false;
             }
         });
         // print " ".join(map(str, word_result))
         // If we should trim the audio, trim it to the end of the last result.
 
-        let trimmed_end_time = undefined;
+        let trimmed_end_time: number | undefined = undefined;
         if (should_trim_audio) {
             // print "Should trim audio!"
-            trimmed_end_time = result[result.length - 1][2] + .05
+            trimmed_end_time = result[result.length - 1].end + .05
         }
         return { result, should_trim_audio, trimmed_end_time }
     }
 
 
-    public align(google_words, real_words): any {
-        // The argument google_words is an array of (word_idx, start, end) tuples.
-        //
-        // Returns a modified (word_idx, start, end) based on the transcript we know
-        // to be correct, where start and end are floats.
-        //
-        // Also returns information on potentially trimming the audio.
-
-        // print "Aligning..."
-        let timestamped_words: any[] = [];
-        let should_trim_audio = false;
-        let trimmed_end_time = undefined;
-        if (google_words.length == real_words.length) {
-            // If lengths are the same, then we're good to go, just copy things over
-            // to the correct format.
-            for (var i: number = 0; i < google_words.length; i++) {
-                let google_word = google_words[i]
-                timestamped_words.push([i, google_word[1], google_word[2]])
-            }
-        } else {
-            // Need to run min edit distance DP algorithm.
-            // print "Compare google words to real words:"
-            // print " ".join(map(lambda x: str(x[0]), google_words))
-            // print " ".join(real_words)
-            let transform_ops = this.runMinEditDistance(google_words, real_words);
-            let transformedWords: any = this.transform(google_words, real_words, transform_ops);
-            timestamped_words = transformedWords.result;
-            should_trim_audio = transformedWords.should_trim_audio;
-            trimmed_end_time = transformedWords.trimmed_end_time;
-        }
-
-        //assert len(timestamped_words) == len(real_words)
-        return {timestamped_words, should_trim_audio, trimmed_end_time};
-    }
+    // public align(google_words: TimestampedWord[], real_words: string[]): any {
+    //     // The argument google_words is an array of (word_idx, start, end) tuples.
+    //     //
+    //     // Returns a modified (word_idx, start, end) based on the transcript we know
+    //     // to be correct, where start and end are floats.
+    //     //
+    //     // Also returns information on potentially trimming the audio.
+    //
+    //     // print "Aligning..."
+    //     let timestamped_words: any[] = [];
+    //     let should_trim_audio = false;
+    //     let trimmed_end_time = undefined;
+    //     if (google_words.length == real_words.length) {
+    //         // If lengths are the same, then we're good to go, just copy things over
+    //         // to the correct format.
+    //         for (var i: number = 0; i < google_words.length; i++) {
+    //             let google_word = google_words[i]
+    //             timestamped_words.push([i, google_word.start, google_word.end])
+    //         }
+    //     } else {
+    //         // Need to run min edit distance DP algorithm.
+    //         // print "Compare google words to real words:"
+    //         // print " ".join(map(lambda x: str(x[0]), google_words))
+    //         // print " ".join(real_words)
+    //         let transform_ops = this.runMinEditDistance(google_words, real_words);
+    //         let transformedWords: any = this.transform(google_words, real_words, transform_ops);
+    //         timestamped_words = transformedWords.result;
+    //         should_trim_audio = transformedWords.should_trim_audio;
+    //         trimmed_end_time = transformedWords.trimmed_end_time;
+    //     }
+    //
+    //     //assert len(timestamped_words) == len(real_words)
+    //     return {timestamped_words, should_trim_audio, trimmed_end_time};
+    // }
 }
 /*
 
