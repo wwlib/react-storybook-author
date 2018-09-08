@@ -9,14 +9,24 @@ let configFile = path.resolve(configPath, "storybookauthor.json");
 
 export default class AppSettings extends EventEmitter {
 
-    static DEFAULT_USER_DATA_PATH: string = path.resolve(configPath, "user");
-
     private _data: any;
     private _timestamp: number = 0;
 
     constructor() {
         super();
         this._data = {};
+    }
+
+    static get userDataPath(): string {
+        return path.resolve(configPath, "user");
+    }
+
+    static get userAudioDataPath(): string {
+        return path.resolve(configPath, "user/audio");
+    }
+
+    static get userBookDataPath(): string {
+        return path.resolve(configPath, "user/book");
     }
 
     get data(): any {

@@ -8,6 +8,10 @@ const ensureDir = require('ensureDir');
 
 const aswCognitoConfig: any = require('../../../data/aws-cognito-config.json');
 
+export type PathInfo = {
+    filename: string;
+    filepath: string;
+}
 export type BookVersion = {
     id: string;
     timestamp: string;
@@ -25,7 +29,7 @@ export type BookDataList = {
 }
 
 export type BookManagerOptions = {
-    userDataPath?: string;
+    userBookDataPath?: string;
 }
 
 export default class BookManager {
@@ -33,15 +37,15 @@ export default class BookManager {
     private static _instance: BookManager;
 
     public bookNames: Map<string, string>;
-    public userDataPath: string | undefined;
+    public userBookDataPath: string | undefined;
 
     constructor(options?: BookManagerOptions) {
         options = options || {};
         let defaultOptions: BookManagerOptions =  {
-            userDataPath: './'
+            userBookDataPath: './'
         }
         options = Object.assign(defaultOptions, options);
-        this.userDataPath = options.userDataPath;
+        this.userBookDataPath = options.userBookDataPath;
 
         this.bookNames = new  Map<string, string>();
     }
@@ -60,33 +64,70 @@ export default class BookManager {
         return Array.from( this.bookNames.keys() );
     }
 
-    loadBookNames(): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
-            let userDataPath: string = path.resolve(this.userDataPath);
-            ensureDir(path.resolve(this.userDataPath), 0o755, (err: any) => {
+    loadBookData(): Promise<BookDataList> {
+        return new Promise<BookDataList>((resolve, reject) => {
+            ensureDir(path.resolve(this.userBookDataPath), 0o755, (err: any) => {
                 if (err) {
                     reject(err);
                 } else {
-                    fs.readdir(userDataPath, (err: any, files: any) => {
+                    fs.readdir(this.userBookDataPath, (err: any, files: any) => {
                         if (err) {
-                            console.log(`loadBookNames: error reading files in: ${userDataPath}`);
+                            console.log(`loadBookData: error reading files in: ${this.userBookDataPath}`);
                             reject(err);
                         } else {
                             files.forEach((file: string) => {
                                 let filename: string = path.basename(file, '.json');
-                                    // console.log(`loadBookNames: adding: ${file} -> ${filename}`);
+                                    // console.log(`loadBookData: adding: ${file} -> ${filename}`);
                                     this.bookNames.set(filename, '');
                                     // let filepath: string = path.resolve(this.model.userDataPath, file);
                                     // this.load(filepath, (err: any, obj: any) => {
                                     //     if (err) {
-                                    //         console.log(`loadBookNames: error loading: ${filepath}`);
+                                    //         console.log(`loadBookData: error loading: ${filepath}`);
                                     //     } else {
-                                    //         console.log(`loadBookNames: setting connection: ${filename}: ${obj.connection}`);
+                                    //         console.log(`loadBookData: setting connection: ${filename}: ${obj.connection}`);
                                     //         this.bookNames.set(filename, obj.connection);
                                     //     }
                                     // });
                             });
-                            resolve()
+                            let bookNames: string[] = Array.from(this.bookNames.keys());
+                            let bookUUIDMap: Map<string, string[]> = new Map<string, string[]>();
+                            bookNames.forEach((bookName: string) => {
+                                let bookNameParts: string[] = bookName.split(';');
+                                let uuid: string = bookNameParts[0];
+                                let version: string = bookNameParts[1];
+
+                                if (!bookUUIDMap.get(uuid)) {
+                                    bookUUIDMap.set(uuid, []);
+                                }
+                                let versions: string[] | undefined = bookUUIDMap.get(uuid);
+                                if (versions) {
+                                    versions.push(version);
+                                }
+                            });
+                            let bookDataList: BookDataList = {
+                                author: 'local',
+                                list: []
+                            };
+                            Array.from(bookUUIDMap.keys()).forEach((uuid: string) => {
+                                let versions: string[] | undefined = bookUUIDMap.get(uuid);
+                                if (versions) {
+                                    let bookData: BookData = {
+                                        id: uuid,
+                                        versions: []
+                                    }
+                                    versions.forEach((version: string) => {
+                                        let bookVersion: BookVersion = {
+                                            id: uuid,
+                                            timestamp: version,
+                                            author: 'local'
+                                        }
+                                        bookData.versions.push(bookVersion);
+                                    });
+                                    bookDataList.list.push(bookData);
+                                }
+
+                            });
+                            resolve(bookDataList);
                         }
                     });
                 }
@@ -100,7 +141,7 @@ export default class BookManager {
 
     deleteBook(book: Book): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            let filepath: string =  this.generateFilepathWithName(book.filename);
+            let filepath: string =  this.generateFilepathWithFilename(book.filename);
             fs.unlink(filepath, (err: any) => {
                 if (err) {
                     reject(err);
@@ -115,12 +156,13 @@ export default class BookManager {
     saveBook(book: Book):  Promise<Book> {
         return new Promise<Book>((resolve, reject) => {
             let json: any = book.toJSON();
-            ensureDir(path.resolve(this.userDataPath), 0o755, (err: any) => {
+            ensureDir(path.resolve(this.userBookDataPath), 0o755, (err: any) => {
                 if (err) {
                     reject(err);
                 } else {
-                    let filepath: string =  this.generateFilepathWithName(book.filename);
-                    this.save(filepath, json, (err: any) => {
+                    let pathInfo: PathInfo =  this.generateFilepathWithUUID(book.uuid);
+                    book.filename = pathInfo.filename;
+                    this.save(pathInfo.filepath, json, (err: any) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -148,9 +190,9 @@ export default class BookManager {
         });
     }
 
-    loadBookWithName(name: string):  Promise<Book> {
+    loadBookWithFilename(filename: string):  Promise<Book> {
         return new Promise<Book>((resolve, reject) => {
-            let filepath: string =  this.generateFilepathWithName(name);
+            let filepath: string =  this.generateFilepathWithFilename(filename);
             this.load(filepath, (err: any, data: any) => {
                 if (err) {
                     reject(err);
@@ -163,8 +205,36 @@ export default class BookManager {
         });
     }
 
-    generateFilepathWithName(name: string): string {
-        return path.resolve(this.userDataPath, `${name}.json`);
+    // Helper function for creating filenames for recorded audio.
+    formatDate(date: Date) {
+      var monthNames = [
+        "January", "February", "March",
+        "April", "May", "June", "July",
+        "August", "September", "October",
+        "November", "December"
+      ];
+
+      var day = date.getDate();
+      var monthIndex = date.getMonth();
+      var year = date.getFullYear();
+
+      var hour = date.getHours();
+      var minute = date.getMinutes();
+      var seconds = date.getSeconds();
+
+
+      return day + '-' + monthNames[monthIndex] + '-' + year + '-'
+            + hour + "_" + minute + "_" + seconds;
+    }
+
+    generateFilepathWithUUID(uuid:string): PathInfo {
+        var filename = `${uuid};${this.formatDate(new Date())}.json`;
+        var filepath = path.resolve(this.userBookDataPath, filename);
+        return {filename: filename, filepath: filepath};
+    }
+
+    generateFilepathWithFilename(filename: string): string {
+        return path.resolve(this.userBookDataPath, filename);
     }
 
     load(filepath: string, cb: any){
@@ -251,9 +321,12 @@ export default class BookManager {
             let body: any = JSON.stringify({ storybookId: book.uuid, data: book.toJSON() });
             // console.log(body);
             fetch(path, { method: 'POST', body: body, headers: headers })
-                .then(res => resolve(res));
+                .then(res => resolve(res))
                 // .then(res => res.json())
                 // .then(json => console.log(json));
+                .catch((err: any) => {
+                    console.log(err);
+                })
         });
     }
 
@@ -278,7 +351,10 @@ export default class BookManager {
             fetch(path, { method: 'POST', body: body, headers: headers })
                 // .then((res: any) => console.log(res))
                 .then((res: any) => res.json())
-                .then(json => resolve(json));
+                .then(json => resolve(json))
+                .catch((err: any) => {
+                    console.log(err);
+                })
         });
     }
 
@@ -304,6 +380,9 @@ export default class BookManager {
                 .then((res: any) => res.json())
                 .then(json => {
                     resolve(this.parseBookList(json));
+                })
+                .catch((err: any) => {
+                    console.log(err);
                 })
         })
     }

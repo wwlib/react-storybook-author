@@ -1,5 +1,10 @@
 ### react-storybook-author - notes
 
+#### Todo
+- include base64-encoded audio in saved file
+- include google word timings in saved file
+- implement audio playback with text highlighted using word timings (animated)
+
 #### New React lifecycle methods
 - https://hackernoon.com/replacing-componentwillreceiveprops-with-getderivedstatefromprops-c3956f7ce607
 
@@ -9,6 +14,8 @@
 - https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html
 - react-file-drop
   - https://github.com/ant-design/ant-design/issues/4892
+- react-highlight-words
+  - https://github.com/bvaughn/react-highlight-words
 
 #### Workers
 - https://www.npmjs.com/package/typed-web-workers

@@ -6,7 +6,7 @@ const ensureDir = require('ensureDir');
 const toBuffer = require('blob-to-buffer');
 
 export type AudioManagerOptions = {
-    userDataPath?: string;
+    userAudioDataPath?: string;
 }
 
 export default class AudioManager {
@@ -25,10 +25,10 @@ export default class AudioManager {
     constructor(options?: AudioManagerOptions) {
         options = options || {};
         let defaultOptions: AudioManagerOptions = {
-            userDataPath: './'
+            userAudioDataPath: './'
         }
         options = Object.assign(defaultOptions, options);
-        this.userDataPath = options.userDataPath;
+        this.userDataPath = options.userAudioDataPath;
         console.log(`AudioManager: userDataPath: ${this.userDataPath}`);
         this.initRecorder();
     }

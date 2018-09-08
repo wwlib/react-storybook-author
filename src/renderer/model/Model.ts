@@ -48,7 +48,8 @@ export default class Model extends EventEmitter {
                 this.initWithData(this.appSettings.data);
 
             }
-            AudioManager.Instance({ userDataPath: this.userDataPath });
+            BookManager.Instance({ userBookDataPath: AppSettings.userBookDataPath });
+            AudioManager.Instance({ userAudioDataPath: AppSettings.userAudioDataPath });
             this.newBook();
             this.emit('ready', this);
         });
@@ -72,10 +73,6 @@ export default class Model extends EventEmitter {
         result.timestamp = 0;
         result.appInfo = this.appInfo.json;
         return result;
-    }
-
-    get userDataPath(): string {
-        return AppSettings.DEFAULT_USER_DATA_PATH;
     }
 
     saveAppSettings(): void {
@@ -198,6 +195,28 @@ export default class Model extends EventEmitter {
             console.log(`error: cannot select undefined page`)
         }
 
+    }
+
+    //// Filesystem API
+
+    loadBooklistFromFilesystem(): Promise<BookDataList> {
+        return BookManager.Instance().loadBookData();
+    }
+
+    loadBookFromFilesystemWithUUID(uuid: string, version: string): Promise<Book> {
+        return new Promise<Book>((resolve, reject) => {
+            BookManager.Instance().loadBookWithFilename(`${uuid};${version}.json`)
+                .then((book: Book) => {
+                    console.log(`loadBookFromFilesystemWithUUID: book: `, book);
+                    this.activeBook = book;
+                    this.activePage = this.activeBook.pageArray[this.activeBook.currentPageNumber];
+                    this.activeBookDataList = undefined;
+                    resolve(book);
+                })
+                .catch(() => {
+                    reject();
+                })
+        })
     }
 
     //// AWS API
@@ -351,7 +370,18 @@ export default class Model extends EventEmitter {
 
     saveActiveBookToCloud(): void {
         console.log(this.activeBook.toJSON());
-        BookManager.Instance().saveBookToCloud(this._activeAuthToken, this.activeBook);
+        BookManager.Instance().saveBookToCloud(this._activeAuthToken, this.activeBook)
+            .then((res: any) => {
+                console.log(`book saved to cloud: `, res);
+            })
+    }
+
+    saveActiveBookToFilesystem(): void {
+        console.log(this.activeBook.toJSON());
+        BookManager.Instance().saveBook(this.activeBook)
+            .then((book: Book) => {
+                console.log(`book saved to filesystem: `, book);
+            })
     }
 
     static getUUID(): string {

@@ -7,7 +7,7 @@ import { BookDataList, BookData, BookVersion } from '../model/BookManager';
 export interface CloudBookListProps { clickHandler: any, bookDataList: BookDataList | undefined }
 export interface CloudBookListState { }
 
-export default class CloudBookList extends React.Component<CloudBookListProps, CloudBookListState> {
+export default class BookList extends React.Component<CloudBookListProps, CloudBookListState> {
 
     componentWillMount() {
         this.setState({});

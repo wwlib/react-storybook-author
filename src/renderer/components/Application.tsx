@@ -9,19 +9,21 @@ import SideNav from './SideNav';
 import MainPage from './MainPage';
 import TitlePage from './TitlePage';
 import PageThumbnail from './PageThumbnail';
-import CloudBookList from './CloudBookLIst';
+import BookList from './BookList';
 import { BookDataList } from '../model/BookManager';
 import Book from '../model/Book';
+import AppSettings from '../model/AppSettings';
 
+const {dialog, shell} = require('electron').remote;
 const Jimp = require('jimp');
 
 export interface ApplicationProps { model: Model }
-export interface ApplicationState { pageArray: Page[], loggedIn: boolean, bookLoaded: boolean, bookDataList: BookDataList | undefined, activePage: Page }
+export interface ApplicationState { pageArray: Page[], loggedIn: boolean, bookLoaded: boolean, cloudBookDataList: BookDataList | undefined, filesystemBookDataList: BookDataList | undefined, activePage: Page }
 
 export default class Application extends React.Component < ApplicationProps, ApplicationState > {
 
     componentWillMount() {
-        this.setState({ loggedIn: false, bookLoaded: false, bookDataList: undefined });
+        this.setState({ loggedIn: false, bookLoaded: false, cloudBookDataList: undefined });
     }
 
     componentDidMount() {
@@ -30,9 +32,19 @@ export default class Application extends React.Component < ApplicationProps, App
     onLoginClick(username: string, password): void {
         console.log(`Application: onLoginClick`);
         this.props.model.login(username, password)
-            .then((bookDataList: BookDataList) => {
-                this.setState({ loggedIn: true, bookLoaded: false, bookDataList: bookDataList });
-            });
+            .then((cloudBookDataList: BookDataList) => {
+                this.setState({ loggedIn: true, bookLoaded: false, cloudBookDataList: cloudBookDataList });
+                this.props.model.loadBooklistFromFilesystem()
+                    .then((filesystemBookDataList: BookDataList) => {
+                        this.setState({ filesystemBookDataList: filesystemBookDataList });
+                    })
+                    .catch((err: any) => {
+                        console.log(err);
+                    })
+            })
+            .catch((err: any) => {
+                console.log(err);
+            })
     }
 
     onTopNavClick(event: any): void {
@@ -53,14 +65,29 @@ export default class Application extends React.Component < ApplicationProps, App
                 this.props.model.saveActiveBookToCloud();
                 break;
             case 'loadBook':
-            this.props.model.retrieveBooklistFromCloudWithAuthor()
-                .then((bookDataList: BookDataList) => {
-                    this.setState({ loggedIn: true, bookLoaded: false, bookDataList: bookDataList });
-                });
+                this.props.model.retrieveBooklistFromCloudWithAuthor()
+                    .then((cloudBookDataList: BookDataList) => {
+                        this.setState({ loggedIn: true, bookLoaded: false, cloudBookDataList: cloudBookDataList });
+                        this.props.model.loadBooklistFromFilesystem()
+                            .then((filesystemBookDataList: BookDataList) => {
+                                this.setState({ filesystemBookDataList: filesystemBookDataList });
+                            })
+                            .catch((err: any) => {
+                                console.log(err);
+                            })
+                    });
+                break;
+            case 'saveBook':
+                this.props.model.saveActiveBookToFilesystem();
+                break;
+            case 'showFiles':
+                if (AppSettings.userBookDataPath) {
+                    shell.showItemInFolder(AppSettings.userBookDataPath);
+                }
                 break;
             case 'signOut':
                 this.props.model.signOut();
-                this.setState({ loggedIn: false, bookLoaded: false, bookDataList: undefined });
+                this.setState({ loggedIn: false, bookLoaded: false, cloudBookDataList: undefined });
                 break;
 
         }
@@ -102,6 +129,24 @@ export default class Application extends React.Component < ApplicationProps, App
             this.props.model.retrieveBookFromCloudWithUUID(bookUUID, version)
                 .then((book: Book) => {
                     console.log(`Application: onCloudBookListClick: book: `, book, this.props.model.activePage);
+                    this.setState({ loggedIn: true, bookLoaded: true, activePage: this.props.model.activePage});
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+        }
+    }
+
+    onFilesystemBookListClick(event: any, bookUUID: string, version: string): void {
+        let nativeEvent: any = event.nativeEvent;
+        console.log(`onFilesystemBookListClick: `, nativeEvent.target.id, nativeEvent.target.name, bookUUID, version);
+        if (bookUUID == "newBook") {
+            this.props.model.newBook();
+            this.setState({ loggedIn: true, bookLoaded: true });
+        } else {
+            this.props.model.loadBookFromFilesystemWithUUID(bookUUID, version)
+                .then((book: Book) => {
+                    console.log(`Application: onFilesystemBookListClick: book: `, book, this.props.model.activePage);
                     this.setState({ loggedIn: true, bookLoaded: true, activePage: this.props.model.activePage});
                 })
                 .catch((err) => {
@@ -152,8 +197,10 @@ export default class Application extends React.Component < ApplicationProps, App
         if (!this.state.loggedIn) {
             layout = <Login model={this.props.model} clickHandler={this.onLoginClick.bind(this)} />
         } else if (!this.state.bookLoaded){
-            // let bookDataList = [{storybookId: "one"}, {storybookId: "two"}, {storybookId: "three"}];
-            layout = <CloudBookList clickHandler={this.onCloudBookListClick.bind(this)} bookDataList={this.state.bookDataList}/>
+            layout = <div>
+                <BookList clickHandler={this.onCloudBookListClick.bind(this)} bookDataList={this.state.cloudBookDataList}/>
+                <BookList clickHandler={this.onFilesystemBookListClick.bind(this)} bookDataList={this.state.filesystemBookDataList}/>
+            </div>
         } else {
             let pageArray: Page[] = [];
             if (this.props.model.activeBook) {
