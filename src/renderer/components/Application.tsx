@@ -13,6 +13,7 @@ import BookList from './BookList';
 import { BookDataList } from '../model/BookManager';
 import Book from '../model/Book';
 import AppSettings from '../model/AppSettings';
+import { AudioFileInfo } from '../audio/AudioManager';
 
 const {dialog, shell} = require('electron').remote;
 const Jimp = require('jimp');
@@ -101,7 +102,13 @@ export default class Application extends React.Component < ApplicationProps, App
                 this.props.model.startRecord();
                 break;
             case 'endRecordButton':
-                this.props.model.endRecord();
+                this.props.model.endRecord()
+                    .then((audioFileInfo: AudioFileInfo) => {
+                        this.props.model.onAudioFileSaved(audioFileInfo);
+                    })
+                    .catch((err: any) => {
+                        console.log(err);
+                    })
                 break;
             case 'uploadAudioButton':
                 break;

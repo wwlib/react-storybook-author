@@ -9,6 +9,17 @@ export type AudioManagerOptions = {
     userAudioDataPath?: string;
 }
 
+export type PathInfo = {
+    filename: string;
+    filepath: string;
+}
+
+export type AudioFileInfo = {
+    filename: string;
+    filepath: string;
+    blob: Blob;
+}
+
 export default class AudioManager {
 
     private static _instance: AudioManager;
@@ -37,18 +48,17 @@ export default class AudioManager {
         return this._instance || (this._instance = new this(options));
     }
 
-    saveUserAudioBlob(blob: Blob, userDataOath: string, filePath: string):  Promise<any> {
+    saveUserAudioBlob(blob: Blob, userDataPath: string, pathInfo: PathInfo):  Promise<any> {
         console.log(`saveUserAudioBlob: `);
         return new Promise<any>((resolve, reject) => {
-            ensureDir(path.resolve(this.userDataPath), 0o755, (err: any) => {
+            ensureDir(path.resolve(userDataPath), 0o755, (err: any) => {
                 if (err) {
                     reject(err);
                 } else {
-                    let filepath: string =  this.generateFilepath();
                     toBuffer(blob, (err, buffer) => {
                         if (err) throw err
-                        fs.writeFileSync(filepath, buffer);
-                        resolve(filepath);
+                        fs.writeFileSync(pathInfo.filepath, buffer);
+                        resolve(pathInfo);
                     });
                 }
             });
@@ -77,23 +87,31 @@ export default class AudioManager {
         });
     }
 
-    public endRecord() {
-        console.log("endRecord");
-        this.audioRecorder.stop();
-        var durationSeconds = (new Date().getTime() - this.startRecordTime) / 1000.0;
-        this.isRecording = false;
-        console.log("duration: ", durationSeconds);
-        console.log(`exporting...`);
-        this.audioRecorder.exportMono16kWAV((blob: Blob) => { // this.audioRecorder.exportWAV((blob: Blob) => {
-            if (this.userDataPath) {
-                this.saveUserAudioBlob(blob, this.userDataPath, this.generateFilepath())
-                    .then((filename: string) => {
-                        console.log(`saved: ${filename}`);
-                    })
-                    .catch((err: any) => {
-                        console.log(err);
-                    })
-            }
+    public endRecord(): Promise<AudioFileInfo> {
+        console.log(`endRecord: `);
+        return new Promise<AudioFileInfo>((resolve, reject) => {
+            this.audioRecorder.stop();
+            var durationSeconds = (new Date().getTime() - this.startRecordTime) / 1000.0;
+            this.isRecording = false;
+            console.log("duration: ", durationSeconds);
+            console.log(`exporting...`);
+            this.audioRecorder.exportMono16kWAV((blob: Blob) => { // this.audioRecorder.exportWAV((blob: Blob) => {
+                if (this.userDataPath) {
+                    this.saveUserAudioBlob(blob, this.userDataPath, this.generateFilepath())
+                        .then((pathInfo: PathInfo) => {
+                            console.log(`saved: ${pathInfo.filepath}`);
+                            resolve({
+                                filename: pathInfo.filename,
+                                filepath: pathInfo.filepath,
+                                blob: blob
+                            });
+                        })
+                        .catch((err: any) => {
+                            console.log(err);
+                            reject(err);
+                        })
+                }
+            });
         });
     }
 
@@ -119,9 +137,10 @@ export default class AudioManager {
             + hour + "_" + minute + "_" + seconds;
     }
 
-    generateFilepath(): string {
+    generateFilepath(): PathInfo {
         var filename = "audio_chunk_" + this.formatDate(new Date()) + ".wav";
-        return path.resolve(this.userDataPath, filename);
+        var filepath = path.resolve(this.userDataPath, filename);
+        return {filepath: filepath, filename: filename};
     }
 
     load(filepath: string, cb: any){

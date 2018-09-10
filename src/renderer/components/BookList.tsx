@@ -21,7 +21,7 @@ export default class BookList extends React.Component<CloudBookListProps, CloudB
         if (nativeEvent.target.id == 'newBook') {
             this.props.clickHandler(event ,'newBook', undefined);
         } else {
-            let idParts: string[] = nativeEvent.target.id.split(',');
+            let idParts: string[] = nativeEvent.target.id.split(';');
             let bookUUID: string = idParts[0];
             let version: string = idParts[1];
             this.props.clickHandler(event ,bookUUID, version);
@@ -35,7 +35,7 @@ export default class BookList extends React.Component<CloudBookListProps, CloudB
                 let id: string = bookData.id;
                 result.push(<ReactBootstrap.Button bsStyle={"info"} key={id} name={id} id={id} style={{width: 600}}>{id}</ReactBootstrap.Button>);
                 bookData.versions.forEach((version: BookVersion) => {
-                    let id: string = `${version.id},${version.timestamp}`;
+                    let id: string = `${version.id};${version.timestamp}`;
                     let label: string = `${version.id} - (${version.timestamp})`;
                     let button = <ReactBootstrap.Button bsStyle={"default"} key={id} name={id} id={id} style={{width: 600}}>{label}</ReactBootstrap.Button>
                     result.push(button);

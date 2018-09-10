@@ -5,7 +5,7 @@ import WindowComponent from './WindowComponent';
 import { appVersion } from './AppVersion';
 import Book, { BookOptions } from './Book';
 import Page, { PageOptions } from './Page';
-import AudioManager from '../audio/AudioManager';
+import AudioManager, { AudioFileInfo } from '../audio/AudioManager';
 import BookManager, { BookDataList } from './BookManager';
 
 // https://docs.aws.amazon.com/cognito/latest/developerguide/using-amazon-cognito-user-identity-pools-javascript-examples.html
@@ -119,8 +119,15 @@ export default class Model extends EventEmitter {
         AudioManager.Instance().startRecord();
     }
 
-    endRecord() {
-        AudioManager.Instance().endRecord();
+    endRecord(): Promise<AudioFileInfo> {
+        return AudioManager.Instance().endRecord();
+    }
+
+    onAudioFileSaved(audioFileInfo: AudioFileInfo): void {
+        console.log(`onAudioFileSaved: `, audioFileInfo, this.activePage);
+        if (this.activePage) {
+            this.activePage.audio = audioFileInfo.filename;
+        }
     }
 
     // Window Management
@@ -213,8 +220,8 @@ export default class Model extends EventEmitter {
                     this.activeBookDataList = undefined;
                     resolve(book);
                 })
-                .catch(() => {
-                    reject();
+                .catch((err: any) => {
+                    reject(err);
                 })
         })
     }

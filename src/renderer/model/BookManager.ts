@@ -12,6 +12,7 @@ export type PathInfo = {
     filename: string;
     filepath: string;
 }
+
 export type BookVersion = {
     id: string;
     timestamp: string;
