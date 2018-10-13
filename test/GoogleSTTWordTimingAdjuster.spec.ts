@@ -189,6 +189,19 @@ const googleWordsSimple: any[] = [
   }
 ];
 
+const transformedWords: any = [ { index: 0, word: 'once', start: 0.7, end: 1.2 },
+     { index: 1, word: 'upon', start: 1.2, end: 1.5 },
+     { index: 2, word: 'a', start: 1.5, end: 1.6 },
+     { index: 3, word: 'time', start: 1.6, end: 2 },
+     { index: 4, word: 'there', start: 2, end: 2.3 },
+     { index: 5, word: 'was', start: 2.3, end: 2.3 },
+     { index: 6, word: 'an', start: 2.3, end: 2.5 },
+     { index: 7, word: 'ogre', start: 2.5, end: 2.9 },
+     { index: 8, word: 'Who', start: 2.9, end: 3.2 },
+     { index: 9, word: 'Loved', start: 3.2, end: 3.4 },
+     { index: 10, word: 'a', start: 3.4, end: 3.5 },
+     { index: 11, word: 'princess', start: 3.5, end: 4.1 } ];
+
 describe('GoogleSpeechWordTimingAdjuster', () => {
     // it('word distance should equal 0', () => {
     //     let googleSTTWordTimingAdjuster = new GoogleSTTWordTimingAdjuster(googleWordsSimple, 'once upon a time');
@@ -306,6 +319,7 @@ describe('GoogleSpeechWordTimingAdjuster', () => {
     it('extra trailing google words: transformResult should equal expectedResult', () => {
         let googleSTTWordTimingAdjuster = new GoogleSTTWordTimingAdjuster(googleWords, 'once upon a time');
         // console.log(googleSTTWordTimingAdjuster.transformResult);
+        // console.log(JSON.stringify(googleSTTWordTimingAdjuster.transformResult, null, 2));
         let expectedResult: any = {
             result:
             [

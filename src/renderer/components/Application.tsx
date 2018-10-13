@@ -15,6 +15,7 @@ import Book from '../model/Book';
 import AppSettings from '../model/AppSettings';
 import { AudioFileInfo } from '../audio/AudioManager';
 
+const toBuffer = require('blob-to-buffer');
 const {dialog, shell} = require('electron').remote;
 const Jimp = require('jimp');
 
@@ -104,7 +105,15 @@ export default class Application extends React.Component < ApplicationProps, App
             case 'endRecordButton':
                 this.props.model.endRecord()
                     .then((audioFileInfo: AudioFileInfo) => {
-                        this.props.model.onAudioFileSaved(audioFileInfo);
+                        // this.props.model.onAudioFileSaved(audioFileInfo);
+                        if (this.state.activePage) {
+                            toBuffer(audioFileInfo.blob, (err, buffer) => {
+                                if (err) throw err
+                                let base64data = buffer.toString('base64');
+                                this.props.model.activePage.audio = 'data:audio/wav;base64,' + base64data;
+                                this.setState({activePage: this.props.model.activePage});
+                            });
+                        }
                     })
                     .catch((err: any) => {
                         console.log(err);

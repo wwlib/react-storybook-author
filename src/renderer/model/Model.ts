@@ -8,6 +8,8 @@ import Page, { PageOptions } from './Page';
 import AudioManager, { AudioFileInfo } from '../audio/AudioManager';
 import BookManager, { BookDataList } from './BookManager';
 
+const toBuffer = require('blob-to-buffer');
+
 // https://docs.aws.amazon.com/cognito/latest/developerguide/using-amazon-cognito-user-identity-pools-javascript-examples.html
 import { CognitoUserPool, CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 const aswCognitoConfig: any = require('../../../data/aws-cognito-config.json');
@@ -127,6 +129,11 @@ export default class Model extends EventEmitter {
         console.log(`onAudioFileSaved: `, audioFileInfo, this.activePage);
         if (this.activePage) {
             this.activePage.audio = audioFileInfo.filename;
+            toBuffer(audioFileInfo.blob, (err, buffer) => {
+                if (err) throw err
+                let base64data = buffer.toString('base64');
+                this.activePage.audio = 'data:audio/wav;base64,' + base64data;
+            });
         }
     }
 

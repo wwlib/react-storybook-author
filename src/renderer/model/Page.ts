@@ -1,4 +1,5 @@
 import Model from './Model';
+import { TimestampedWord } from '../googlecloud/GoogleSTTWordTimingAdjuster';
 
 export type PageOptions = {
     uuid?: string;
@@ -7,6 +8,8 @@ export type PageOptions = {
     image?: any;
     text?: string;
     audio?: any;
+    audioTranscript?: string;
+    audioTimestampedWords?: TimestampedWord[];
     sceneObjects?: any[];
     prompts?: string[];
     css?: string;
@@ -20,6 +23,8 @@ export default class Page {
     public image: any;
     public text: string;
     public audio: any;
+    public audioTranscript: string;
+    public audioTimestampedWords: TimestampedWord[];
     public prompts: string[];
     public css: string;
     public sceneObjects: any[];
@@ -33,6 +38,8 @@ export default class Page {
             image: undefined,
             text: '',
             audio: undefined,
+            audioTranscript: undefined,
+            audioTimestampedWords: undefined,
             prompts: [],
             css: '',
             sceneObjects: []
@@ -49,6 +56,19 @@ export default class Page {
         this.image = json.image;
         this.text = json.text;
         this.audio = json.audio;
+        this.audioTranscript = json.audioTranscript;
+        if (json.audioTimestampedWords) {
+            this.audioTimestampedWords = [];
+            json.audioTimestampedWords.forEach((timestampedWordData: any) => {
+                let timestampedWord: TimestampedWord = {
+                    index: timestampedWordData.index,
+                    word: timestampedWordData.word,
+                    start: timestampedWordData.start,
+                    end: timestampedWordData.end
+                }
+                this.audioTimestampedWords.push(timestampedWord);
+            });
+        }
         this.prompts = json.prompts;
         this.css = json.css || '';
         this.sceneObjects = [];
@@ -70,6 +90,19 @@ export default class Page {
         if (this.image) json.image = this.image;
         if (this.text) json.text = this.text;
         if (this.audio) json.audio = this.audio;
+        if (this.audioTranscript) json.audioTranscript = this.audioTranscript;
+        if (this.audioTimestampedWords) {
+            json.audioTimestampedWords = [];
+            this.audioTimestampedWords.forEach((timestampedWord: TimestampedWord) => {
+                let timestampedWordData: any = {
+                    index: timestampedWord.index,
+                    word: timestampedWord.word,
+                    start: timestampedWord.start,
+                    end: timestampedWord.end
+                }
+                json.audioTimestampedWords.push(timestampedWordData);
+            });
+        }
         if (this.prompts && this.prompts.length > 0) json.prompts = this.prompts;
         if (this.css) json.css = this.css;
         //TODO

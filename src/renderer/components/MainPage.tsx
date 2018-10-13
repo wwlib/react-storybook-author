@@ -1,18 +1,22 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
+import ReactAudioPlayer from 'react-audio-player';
+import Highlighter from "react-highlight-words";
+
+import { TimestampedWord } from '../googlecloud/GoogleSTTWordTimingAdjuster';
 import BottomNav from './BottomNav';
 import Page from '../model/Page';
 
 import FileDrop from './FileDrop';
 
 export interface MainPageProps { bottomNavClickHandler: any, changeHandler: any, imageHandler: any, page: Page }
-export interface MainPageState {}
+export interface MainPageState { higlightedTranscript: string }
 
 export default class MainPage extends React.Component<MainPageProps, MainPageState> {
 
 
     componentWillMount() {
-        this.setState({imageURL: ''});
+        this.setState({higlightedTranscript: ''});
     }
 
     componentDidMount() {
@@ -112,6 +116,38 @@ export default class MainPage extends React.Component<MainPageProps, MainPageSta
         }
     }
 
+    getCurrentGoogleWord(elapsedTime: number): string {
+        let result: string = '';
+        if (this.props.page && this.props.page.audioTimestampedWords) {
+            this.props.page.audioTimestampedWords.forEach((timestampedWord: TimestampedWord) => {
+                if (timestampedWord.start < elapsedTime && timestampedWord.end > elapsedTime) {
+                    result = timestampedWord.word;
+                }
+            })
+        }
+        return result;
+    }
+
+    formatTranscript(highlightedWord: string): string {
+        let result: string = '';
+        let transcriptWords: string[] = this.props.page.audioTranscript.split(' ');
+        transcriptWords.forEach((word: string) => {
+            if (word == highlightedWord) {
+                result += '<' + word + '> ';
+            } else {
+                result += word + ' ';
+            }
+        })
+        return result;
+    }
+
+    onReactAudioPlayerListen(elapsedTime: number): void {
+        console.log(elapsedTime);
+        let highlightedWord: string = this.getCurrentGoogleWord(elapsedTime);
+        console.log(highlightedWord);
+        this.setState({higlightedTranscript: this.formatTranscript(highlightedWord)});
+    }
+
     render() {
         let imageContainerStyle: any = {width: 500, background:`url(${this.props.page.image}) no-repeat`, backgroundSize: '100%'};
 
@@ -136,7 +172,13 @@ export default class MainPage extends React.Component<MainPageProps, MainPageSta
                         </div>
                     </div>
                 </div>
-
+                <ReactAudioPlayer
+                  src={this.props.page.audio}
+                  listenInterval={100}
+                  onListen={this.onReactAudioPlayerListen.bind(this)}
+                  controls
+                />
+                <textarea value={this.state.higlightedTranscript} id="storyTextAreaInput" rows={1}  />
                 <div id="mainPageBottom">
                     <div id="pageNumber"> Page 1 </div>
                 </div>
