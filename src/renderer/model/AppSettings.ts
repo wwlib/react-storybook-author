@@ -7,14 +7,24 @@ const jsonfile = require('jsonfile');
 let configPath = path.resolve(osenv.home(), ".storybookauthor");
 let configFile = path.resolve(configPath, "storybookauthor.json");
 
+export interface AppSettingsOptions {
+    nluDialogflow_projectId?: string;
+    nluDialogflow_privateKey?: string;
+    nluDialogflow_clientEmail?: string;
+    timestamp?: number;
+}
+
 export default class AppSettings extends EventEmitter {
 
-    private _data: any;
+    public nluDialogflow_projectId: string = '';
+    public nluDialogflow_privateKey: string = '';
+    public nluDialogflow_clientEmail: string = '';
+
     private _timestamp: number = 0;
 
-    constructor() {
+    constructor(options?: AppSettingsOptions) {
         super();
-        this._data = {};
+        this.initWithData(options);
     }
 
     static get userDataPath(): string {
@@ -29,12 +39,30 @@ export default class AppSettings extends EventEmitter {
         return path.resolve(configPath, "user/book");
     }
 
-    get data(): any {
-        return this._data;
+    initWithData(options?: AppSettingsOptions): void {
+        options = options || {};
+        let defaultOptions: AppSettingsOptions =  {
+            nluDialogflow_projectId: '',
+            nluDialogflow_privateKey: '',
+            nluDialogflow_clientEmail: '',
+            timestamp: 0
+        }
+        options = Object.assign(defaultOptions, options);
+
+        console.log(`AppSettings: initWithData: `, options);
+        this.nluDialogflow_projectId = options.nluDialogflow_projectId || '';
+        this.nluDialogflow_privateKey = options.nluDialogflow_privateKey || '';
+        this.nluDialogflow_clientEmail = options.nluDialogflow_clientEmail || '';
+        this._timestamp = options.timestamp || 0;
     }
 
-    set data(obj: any) {
-        this._data = obj;
+    get json(): any {
+        let json: any = {
+            nluDialogflow_projectId: this.nluDialogflow_projectId,
+            nluDialogflow_privateKey: this.nluDialogflow_privateKey,
+            nluDialogflow_clientEmail: this.nluDialogflow_clientEmail,
+        };
+        return json;
     }
 
     get timestamp(): number {
@@ -50,8 +78,8 @@ export default class AppSettings extends EventEmitter {
                     if (err) {
                         cb(err);
                     } else {
-                        this._data = obj;
-                        this._timestamp = this._data.timestamp;
+                        this.initWithData(obj);
+                        this._timestamp = obj.timestamp;
                         cb(err, obj);
                     }
                 });
@@ -61,12 +89,11 @@ export default class AppSettings extends EventEmitter {
 
     save(cb: any){
         this._timestamp = new Date().getTime();
-        this._data.timestamp = this._timestamp;
         ensureDir(path.resolve(configPath), 0o755, (err: any) => {
             if (err) {
                 console.log(`error: ${configPath} cannot be found`)
             } else {
-                jsonfile.writeFile(configFile, this._data, {spaces: 2}, (err: any) => {
+                jsonfile.writeFile(configFile, this.json, {spaces: 2}, (err: any) => {
                     if (err) {
                         cb(err);
                     } else {

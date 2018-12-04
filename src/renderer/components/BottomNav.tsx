@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactBootstrap from "react-bootstrap";
 
-export interface BottomNavProps { clickHandler: any }
+export interface BottomNavProps { clickHandler: any, fileHandler: any }
 export interface BottomNavState { }
 
 export default class BottomNav extends React.Component<BottomNavProps, BottomNavState> {
@@ -15,7 +15,20 @@ export default class BottomNav extends React.Component<BottomNavProps, BottomNav
     }
 
     onButtonClicked(event: any) {
-        this.props.clickHandler(event);
+        let nativeEvent: any = event.nativeEvent;
+        this.props.clickHandler('bottomNav', nativeEvent.target.id);
+    }
+
+    onUploadButtonClick(event: any): void {
+        let inputElement = document.getElementById("uploadAudioFileInput");
+        if (inputElement) {
+            inputElement.click();
+        }
+    }
+
+    onFileInputChange(event: any): void {
+        var fileList = event.target.files
+        this.props.fileHandler(fileList);
     }
 
     //onchange="angular.element(this).scope().uploadImage(this.files)"
@@ -34,8 +47,9 @@ export default class BottomNav extends React.Component<BottomNavProps, BottomNav
 
                         <p style={{ verticalAlign: "middle", margin: "2px" }}>or</p>
 
-                        <button id="uploadAudioButton"></button>
-                        <input accept="audio/wav" id="uploadAudioFileInput" type="file" />
+                        <button id="uploadAudioButton" onClick={this.onUploadButtonClick.bind(this)}></button>
+                        <input type="file" id="uploadAudioFileInput" name="file" accept="audio/wav" multiple style={{ display: 'none' }} onChange={this.onFileInputChange.bind(this)}/>
+
 
                     </div>
                     <div className="bottomRightButtons">

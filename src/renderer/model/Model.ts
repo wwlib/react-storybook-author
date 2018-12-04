@@ -1,10 +1,9 @@
 import { EventEmitter } from "events";
 import AppSettings from "./AppSettings";
-import AppInfo from './AppInfo';
 import WindowComponent from './WindowComponent';
 import { appVersion } from './AppVersion';
-import Book, { BookOptions } from './Book';
-import Page, { PageOptions } from './Page';
+import Book from './Book';
+import Page from './Page';
 import AudioManager, { AudioFileInfo } from '../audio/AudioManager';
 import BookManager, { BookDataList } from './BookManager';
 
@@ -24,7 +23,6 @@ let appSettingsDataTemplate: any = require('../../../data/settings-template.json
 export default class Model extends EventEmitter {
 
     public appSettings: AppSettings;
-    public appInfo: AppInfo;
     public statusMessages: string;
     public panelZIndexMap: Map<string, number>;
     public activeBook: Book;
@@ -40,46 +38,24 @@ export default class Model extends EventEmitter {
         super();
         this.appSettings = new AppSettings();
         this.panelZIndexMap = new Map<string, number>();
+        this.statusMessages = '';
+        this.initCognito();
+        BookManager.Instance({ userBookDataPath: AppSettings.userBookDataPath });
+        AudioManager.Instance({ userAudioDataPath: AppSettings.userAudioDataPath });
         this.appSettings.load((err: any, obj: any) => {
-            if (err || !this.appSettings.data) {
-                console.log(`Model: AppSettings not found. Using template.`);
-                this.appSettings.data = appSettingsDataTemplate;
-                this.initWithData(this.appSettings.data);
-                this.saveAppSettings();
-            } else {
-                this.initWithData(this.appSettings.data);
-
+            if (err) {
+                console.log(`Model: AppSettings not found. Using defaults.`);
             }
-            BookManager.Instance({ userBookDataPath: AppSettings.userBookDataPath });
-            AudioManager.Instance({ userAudioDataPath: AppSettings.userAudioDataPath });
             this.newBook();
             this.emit('ready', this);
         });
-
-        // this.quiz = new Quiz();
-        this.statusMessages = '';
-        this.initCognito();
-    }
-
-    initWithData(data: any): void {
-        this.appInfo = new AppInfo();
-        this.appInfo.initWithData(data.appInfo);
     }
 
     get appVerison(): string {
         return appVersion;
     }
 
-    get json(): any {
-        let result: any = {}
-        result.timestamp = 0;
-        result.appInfo = this.appInfo.json;
-        return result;
-    }
-
     saveAppSettings(): void {
-        console.log(`saveAppSettings: `, this.json);
-        this.appSettings.data = this.json;
         this.appSettings.save((err: any) => {
             if (err) {
                 console.log(`Model: Error saving appSettings: `, err);
@@ -87,17 +63,17 @@ export default class Model extends EventEmitter {
         });
     }
 
-    reloadAppSettings(): void {
-        this.appSettings.load((err: any, obj: any) => {
-            if (err || !this.appSettings.data) {
-                console.log(`Model: AppSettings not found. Using template.`);
-                this.appSettings.data = appSettingsDataTemplate;
-                this.initWithData(this.appSettings.data);
-            } else {
-                this.initWithData(this.appSettings.data);
-            }
-
-            this.emit('updateModel', this);
+    reloadAppSettings(): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this.appSettings.load((err: any, obj: any) => {
+                if (err) {
+                    console.log(`Model: Error reloading AppSettings.`);
+                    reject(`Model: Error reloading AppSettings.`);
+                } else {
+                    this.emit('updateModel', this);
+                    resolve(obj);
+                }
+            });
         });
     }
 
@@ -176,14 +152,14 @@ export default class Model extends EventEmitter {
 
     // Book & Page API
 
-    newBook(options?: BookOptions): Book {
+    newBook(options?: any): Book {
         this.activeBook = new Book(options);
         this.addNewPage();
         this.activeBookDataList = undefined;
         return this.activeBook;
     }
 
-    addNewPage(options?: PageOptions): Page | undefined {
+    addNewPage(options?: any): Page | undefined {
         let result: Page | undefined = undefined;
         if (this.activeBook) {
             result = this.activePage = this.activeBook.addNewPage();
@@ -405,6 +381,5 @@ export default class Model extends EventEmitter {
     dispose(): void {
         appSettingsDataTemplate = null;
         delete(this.appSettings);// = null;
-        delete(this.appInfo);// = null;
     }
 }

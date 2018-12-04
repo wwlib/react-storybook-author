@@ -1,9 +1,12 @@
 ### react-storybook-author - notes
 
 #### Todo
-- include base64-encoded audio in saved file
-- include google word timings in saved file
-- implement audio playback with text highlighted using word timings (animated)
+- allow drag/drop of scene objects
+- allow drag/drop of triggers
+- allow manual editing of word timings
+- use redux
+- implement undo/redo
+-
 
 #### New React lifecycle methods
 - https://hackernoon.com/replacing-componentwillreceiveprops-with-getderivedstatefromprops-c3956f7ce607

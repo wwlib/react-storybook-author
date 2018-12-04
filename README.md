@@ -13,6 +13,7 @@ electron
 git clone git@github.com:wwlib/react-storybook-author.git
 cd react-storybook-author
 yarn
+npm rebuild --runtime=electron --target=2.0.5 --disturl=https://atom.io/download/electron
 yarn start
 ```
 

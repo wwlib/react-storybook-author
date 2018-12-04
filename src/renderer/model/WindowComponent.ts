@@ -29,6 +29,7 @@ export default class WindowComponent extends EventEmitter {
     }
 
     open(): void {
+        this.restoreStyle();
         this._opened = true;
     }
 
@@ -140,6 +141,13 @@ export default class WindowComponent extends EventEmitter {
         }
     }
 
+    static restoreStyleWithId(id: string): void {
+        let selectedWindow: WindowComponent | undefined = WindowComponent.getWindowComponentWithId(id);
+        if (selectedWindow) {
+            selectedWindow.restoreStyle();
+        }
+    }
+
     static bringWindowToFrontWithId(id: string): void {
         let selectedWindow: WindowComponent | undefined = WindowComponent.getWindowComponentWithId(id);
         let topMostWindow: WindowComponent | undefined = undefined;
@@ -164,15 +172,16 @@ export default class WindowComponent extends EventEmitter {
     }
 
     static addWindowWithId(id: string, x: number = 0, y: number = 0, z: number = 0): WindowComponent {
-        let windowComponent: WindowComponent | undefined = WindowComponent.windowMap.get(id);
-        if (windowComponent) {
-            windowComponent.restoreStyle();
+        let tempWindowComponent: WindowComponent | undefined = WindowComponent.windowMap.get(id);
+        if (tempWindowComponent) {
+            tempWindowComponent.restoreStyle();
         } else {
-            windowComponent = new WindowComponent(id, x, y, z);
-            windowComponent.saveStyle();
-            windowComponent.z = WindowComponent.nextZIndex++;
-            WindowComponent.addWindowComponent(windowComponent);
+            tempWindowComponent = new WindowComponent(id, x, y, z);
+            tempWindowComponent.saveStyle();
+            tempWindowComponent.z = WindowComponent.nextZIndex++;
+
+            WindowComponent.addWindowComponent(tempWindowComponent);
         }
-        return windowComponent;
+        return tempWindowComponent;
     }
 }
